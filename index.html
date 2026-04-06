@@ -246,8 +246,39 @@ body::before {
 }
 .model-pill.on { background:var(--bg4); color:var(--text); }
 .model-pill .dot { width:6px; height:6px; border-radius:50%; }
-.dot-n { background:var(--accent); box-shadow:0 0 6px var(--accent); }
+.dot-n { background:var(--accent);  box-shadow:0 0 6px var(--accent); }
 .dot-t { background:var(--accent2); box-shadow:0 0 6px var(--accent2); }
+.dot-p { background:var(--yellow);  box-shadow:0 0 6px var(--yellow); }
+
+/* Collapsible thinking block */
+.think-box {
+  background:rgba(128,102,255,0.06); border:1px solid rgba(128,102,255,0.2);
+  border-radius:8px; margin-bottom:10px; overflow:hidden;
+}
+.think-toggle {
+  display:flex; align-items:center; gap:8px; padding:9px 13px;
+  cursor:pointer; user-select:none; transition:background 0.15s;
+  font-family:var(--font-m); font-size:11px; color:var(--accent2);
+}
+.think-toggle:hover { background:rgba(128,102,255,0.07); }
+.think-arrow {
+  font-size:9px; transition:transform 0.25s; color:var(--accent2); opacity:0.7;
+  flex-shrink:0;
+}
+.think-toggle.open .think-arrow { transform:rotate(90deg); }
+.think-spinner {
+  width:10px; height:10px; border-radius:50%;
+  border:2px solid rgba(128,102,255,0.3); border-top-color:var(--accent2);
+  animation:spin 0.8s linear infinite; flex-shrink:0;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+.think-content {
+  max-height:0; overflow:hidden;
+  transition:max-height 0.35s ease, padding 0.2s;
+  font-family:var(--font-m); font-size:11px; color:rgba(200,190,255,0.75);
+  line-height:1.7; padding:0 13px;
+}
+.think-content.open { max-height:400px; padding:0 13px 11px; overflow-y:auto; }
 
 .sync-pill {
   display:flex; align-items:center; gap:7px;
@@ -365,12 +396,7 @@ body::before {
   background:rgba(0,212,255,0.04); border-color:rgba(0,212,255,0.18);
 }
 
-.think-box {
-  background:rgba(128,102,255,0.06); border:1px solid rgba(128,102,255,0.2);
-  border-radius:8px; padding:10px 13px; margin-bottom:10px;
-  font-family:var(--font-m); font-size:11px; color:var(--accent2);
-}
-.think-lbl { font-size:9px; text-transform:uppercase; letter-spacing:0.12em; opacity:0.65; margin-bottom:5px; }
+.think-lbl-old { display:none; } /* replaced by collapsible */
 
 /* Typing */
 .typing { display:flex; gap:5px; align-items:center; padding:4px 0; }
@@ -634,6 +660,9 @@ textarea { resize:none; }
       <button class="model-pill" id="pill-t" onclick="setModel('think')">
         <span class="dot dot-t"></span> Thinking
       </button>
+      <button class="model-pill" id="pill-p" onclick="setModel('pro')">
+        <span class="dot dot-p"></span> Pro
+      </button>
     </div>
 
     <!-- Sync pill -->
@@ -873,6 +902,7 @@ function setModel(m) {
   model = m;
   document.getElementById('pill-n').classList.toggle('on', m==='normal');
   document.getElementById('pill-t').classList.toggle('on', m==='think');
+  document.getElementById('pill-p').classList.toggle('on', m==='pro');
 }
 
 /* ═══════════════ PLUGIN SYNC ═══════════════ */
@@ -978,19 +1008,41 @@ function removeWelcome() {
   if (w) w.remove();
 }
 
-function appendMsg(role, text, thinking) {
+function appendMsg(role, text, thinking, thinkingLive) {
   removeWelcome();
   const c = document.getElementById('msgs');
   const d = document.createElement('div');
   d.className = 'msg ' + (role==='user'?'user':'');
   const avClass = role==='user'?'usr':'ai';
   const avIco   = role==='user'?'👤':'🤖';
+
   let thinkHtml = '';
-  if (thinking) thinkHtml = `<div class="think-box"><div class="think-lbl">💭 Thinking process</div>${esc(thinking)}</div>`;
+  if (thinking) {
+    const tid = 'think-' + Date.now();
+    const lbl = thinkingLive ? '💭 Thinking...' : '💭 Thought process';
+    const spinner = thinkingLive ? '<div class="think-spinner"></div>' : '';
+    thinkHtml = `
+      <div class="think-box">
+        <div class="think-toggle" id="tog-${tid}" onclick="toggleThink('${tid}')">
+          ${spinner}
+          <span style="flex:1">${lbl}</span>
+          <span class="think-arrow">▶</span>
+        </div>
+        <div class="think-content" id="cnt-${tid}">${esc(thinking).replace(/\n/g,'<br>')}</div>
+      </div>`;
+  }
+
   d.innerHTML = `<div class="msg-av ${avClass}">${avIco}</div><div class="msg-body">${thinkHtml}${fmt(text)}</div>`;
   c.appendChild(d);
   c.scrollTop = c.scrollHeight;
   return d;
+}
+
+function toggleThink(tid) {
+  const tog = document.getElementById('tog-'+tid);
+  const cnt = document.getElementById('cnt-'+tid);
+  tog.classList.toggle('open');
+  cnt.classList.toggle('open');
 }
 
 function showTyping() {
@@ -1036,7 +1088,10 @@ function spawnTask(name, steps) {
 
   const els = document.getElementById(sid).querySelectorAll('.task-step');
   let i = 0;
-  (function tick() {
+  let running = true;
+
+  function tick() {
+    if (!running) return;
     if (i > 0) {
       els[i-1].className = 'task-step done';
       els[i-1].querySelector('.step-ico').textContent = '✅';
@@ -1044,9 +1099,21 @@ function spawnTask(name, steps) {
     if (i < els.length) {
       els[i].className = 'task-step active';
       els[i].querySelector('.step-ico').textContent = '⟳';
-      i++; setTimeout(tick, 600 + Math.random()*500);
+      i++;
+      setTimeout(tick, 600 + Math.random()*400);
     }
-  })();
+  }
+  tick();
+
+  // Call finish() when AI is done — marks all remaining steps ✅
+  function finish() {
+    running = false;
+    els.forEach(el => {
+      el.className = 'task-step done';
+      el.querySelector('.step-ico').textContent = '✅';
+    });
+  }
+  return finish;
 }
 
 /* ═══════════════ AI SEND ═══════════════ */
@@ -1070,10 +1137,25 @@ async function send() {
   pushLog(`[chat] ${text.slice(0,50)}`);
 
   showTyping();
-  spawnTask(text, makeTaskSteps(text));
+  const finishTask = spawnTask(text, makeTaskSteps(text));
 
   try {
+    // All modes use glm-4.5-flash. Pro = same model but richer system prompt + more tokens.
     const mdl = 'glm-4.5-flash';
+    const extraParams = model === 'think' ? { thinking: { type: 'enabled' } } : {};
+
+    const proPrefix = model === 'pro'
+      ? `You are StudioMind PRO — an elite Roblox Studio AI engineer. You produce EXCEPTIONAL, production-ready work. Rules for every response:
+1. Think deeply before answering. Consider edge cases, performance, and best practices.
+2. Always provide COMPLETE, fully working Luau code — never partial snippets.
+3. Structure code professionally: modular, commented, with proper error handling.
+4. For GUIs: use TweenService for animations, proper AnchorPoints, responsive sizing with UDim2.
+5. For scripts: use proper Roblox APIs, avoid deprecated methods, handle RemoteEvents correctly.
+6. After code, explain what it does and how to use it.
+7. If the task is complex, break it into phases and deliver each phase completely.
+NEVER cut corners. NEVER say "add your own logic here". Deliver perfection.\n\n`
+      : '';
+
     const resp = await fetch(API_URL, {
       method: 'POST',
       headers: {
@@ -1082,8 +1164,13 @@ async function send() {
       },
       body: JSON.stringify({
         model: mdl,
-        messages: [{ role:'system', content: getSysPrompt() }, ...chatHistory],
-        max_tokens: 2048
+        messages: [
+          { role:'system', content: proPrefix + getSysPrompt() },
+          ...chatHistory
+        ],
+        max_tokens: model === 'pro' ? 4096 : 2048,
+        temperature: model === 'pro' ? 0.3 : 0.7,
+        ...extraParams
       })
     });
 
@@ -1098,6 +1185,7 @@ async function send() {
     let thinking = choice?.message?.reasoning_content || null;
 
     hideTyping();
+    finishTask();
     appendMsg('assistant', content, thinking);
     chatHistory.push({ role:'assistant', content });
     addMem('AI: ' + content.slice(0,55));
@@ -1105,6 +1193,7 @@ async function send() {
 
   } catch(err) {
     hideTyping();
+    finishTask();
     appendMsg('assistant', `❌ **Error:** ${err.message}\n\nCheck that:\n• Your GLM API key is set (Owner Panel → API Config)\n• You have internet access\n• The Zhipu API is reachable`);
   }
 
