@@ -236,13 +236,13 @@ body::before {
 .head-logo em { font-style:normal; color:var(--accent); }
 
 .model-pills {
-  display:flex; gap:4px; background:var(--bg3); padding:3px; border-radius:9px;
+  display:flex; gap:3px; background:var(--bg3); padding:3px; border-radius:9px;
   border:1px solid var(--border);
 }
 .model-pill {
-  padding:5px 13px; border:none; border-radius:6px; background:transparent;
-  color:var(--muted); font-family:var(--font-m); font-size:11px; cursor:pointer;
-  transition:all 0.2s; display:flex; align-items:center; gap:5px;
+  padding:5px 10px; border:none; border-radius:6px; background:transparent;
+  color:var(--muted); font-family:var(--font-m); font-size:10px; cursor:pointer;
+  transition:all 0.2s; display:flex; align-items:center; gap:4px; white-space:nowrap;
 }
 .model-pill.on { background:var(--bg4); color:var(--text); }
 .model-pill .dot { width:6px; height:6px; border-radius:50%; }
@@ -931,15 +931,14 @@ function startConn() {
       document.getElementById('sync-led').className = 'sync-led live';
       document.getElementById('sync-lbl').textContent = 'Connected';
       document.getElementById('conn-status').textContent = '✓ Studio synced';
-      // brief pause then re-sync
       setTimeout(()=>{
         if (!connected) return;
         document.getElementById('sync-led').className = 'sync-led blink';
         document.getElementById('sync-lbl').textContent = 'Re-syncing';
         document.getElementById('conn-status').textContent = 'Re-syncing...';
-      }, 600);
+      }, 300);
     }
-  }, 280);
+  }, 90);
 }
 
 function stopConn() {
@@ -1086,32 +1085,39 @@ function spawnTask(name, steps) {
     </div>`;
   log.insertBefore(card, log.firstChild);
 
-  const els = document.getElementById(sid).querySelectorAll('.task-step');
+  const els = Array.from(document.getElementById(sid).querySelectorAll('.task-step'));
+  const lastIdx = els.length - 1;
   let i = 0;
-  let running = true;
+  let stopped = false;
 
+  function markDone(el) {
+    el.className = 'task-step done';
+    el.querySelector('.step-ico').textContent = '✅';
+  }
+  function markActive(el) {
+    el.className = 'task-step active';
+    el.querySelector('.step-ico').textContent = '⟳';
+  }
+
+  // Animate all steps EXCEPT the last — last waits for AI
   function tick() {
-    if (!running) return;
-    if (i > 0) {
-      els[i-1].className = 'task-step done';
-      els[i-1].querySelector('.step-ico').textContent = '✅';
-    }
-    if (i < els.length) {
-      els[i].className = 'task-step active';
-      els[i].querySelector('.step-ico').textContent = '⟳';
+    if (stopped) return;
+    if (i > 0 && i - 1 < lastIdx) markDone(els[i-1]);
+    if (i < lastIdx) {
+      markActive(els[i]);
       i++;
-      setTimeout(tick, 600 + Math.random()*400);
+      setTimeout(tick, 500 + Math.random()*400);
+    } else if (i === lastIdx) {
+      // Reached last step — make it spin and wait for finish()
+      markActive(els[lastIdx]);
     }
   }
   tick();
 
-  // Call finish() when AI is done — marks all remaining steps ✅
+  // finish() called when AI actually responds — checks the last step
   function finish() {
-    running = false;
-    els.forEach(el => {
-      el.className = 'task-step done';
-      el.querySelector('.step-ico').textContent = '✅';
-    });
+    stopped = true;
+    els.forEach(markDone);
   }
   return finish;
 }
