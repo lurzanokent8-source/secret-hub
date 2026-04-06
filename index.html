@@ -938,7 +938,7 @@ function startConn() {
         document.getElementById('conn-status').textContent = 'Re-syncing...';
       }, 300);
     }
-  }, 90);
+  }, 200);
 }
 
 function stopConn() {
@@ -1197,6 +1197,9 @@ NEVER cut corners. NEVER say "add your own logic here". Deliver perfection.\n\n`
     addMem('AI: ' + content.slice(0,55));
     pushLog(`[AI] ${content.slice(0,60)}`);
 
+    // Auto-push any Lua code blocks to the plugin relay
+    pushToPlugin(text, content);
+
   } catch(err) {
     hideTyping();
     finishTask();
@@ -1204,6 +1207,35 @@ NEVER cut corners. NEVER say "add your own logic here". Deliver perfection.\n\n`
   }
 
   document.getElementById('send-btn').disabled = false;
+}
+
+/* ═══════════════ PLUGIN PUSH ═══════════════ */
+const RELAY = localStorage.getItem('sm_relay') || 'http://localhost:3000';
+
+function extractLua(text) {
+  // grab all ```lua ... ``` or ```luau ... ``` blocks and join them
+  const blocks = [];
+  const re = /```(?:lua|luau)?\n?([\s\S]*?)```/gi;
+  let m;
+  while ((m = re.exec(text)) !== null) blocks.push(m[1].trim());
+  return blocks.join('\n\n');
+}
+
+async function pushToPlugin(prompt, aiResponse) {
+  const code = extractLua(aiResponse);
+  if (!code) return; // no code blocks found, nothing to push
+  try {
+    await fetch(RELAY + '/push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: prompt.slice(0,60), code, id: Date.now() })
+    });
+    pushLog(`[plugin] Pushed code to relay`);
+    toast('📡 Code sent to Roblox Studio plugin!');
+  } catch(e) {
+    // relay not running — silent fail, user sees toast only if connected
+    if (connected) toast('⚠ Relay server not reachable.');
+  }
 }
 
 /* ═══════════════ TOAST ═══════════════ */
