@@ -1073,7 +1073,7 @@ async function send() {
   spawnTask(text, makeTaskSteps(text));
 
   try {
-    const mdl = model === 'think' ? 'glm-z1-flash' : 'glm-4-flash';
+    const mdl = 'glm-4.5-flash';
     const resp = await fetch(API_URL, {
       method: 'POST',
       headers: {
@@ -1119,8 +1119,90 @@ function toast(msg) {
   setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(8px)'; t.style.transition='0.3s'; setTimeout(()=>t.remove(),300); }, 2200);
 }
 
+/* ═══════════════ SESSION PERSIST ═══════════════ */
+function saveSession(type, lbl) {
+  sessionStorage.setItem('sm_sess', JSON.stringify({ type, lbl }));
+}
+function clearSession() { sessionStorage.removeItem('sm_sess'); }
+
+// Override logout to clear session
+const _logoutOrig = logout;
+logout = function() {
+  clearSession(); stopConn(); chatHistory = [];
+  document.getElementById('msgs').innerHTML = buildWelcome();
+  document.getElementById('task-log').innerHTML = '<div class="empty-state">No tasks yet.<br>Start a conversation!</div>';
+  taskTotal = 0; document.getElementById('task-cnt').textContent = '0';
+  document.getElementById('key-inp').value = '';
+  document.getElementById('owner-inp').value = '';
+  hide('screen-app'); hide('screen-owner'); show('screen-login');
+};
+
+// Override loginKey to save session
+const _loginKeyOrig = loginKey;
+loginKey = function() {
+  const v = document.getElementById('key-inp').value.trim();
+  const k = getKeys().find(k=>k.val===v);
+  const err = document.getElementById('err-key');
+  if (!k) { err.classList.add('show'); return; }
+  err.classList.remove('show');
+  ownerMode = false;
+  const lbl = k.label || 'USER';
+  document.getElementById('user-badge').textContent = lbl;
+  document.getElementById('user-badge').className = 'badge badge-user';
+  saveSession('user', lbl);
+  openApp();
+  pushLog('Key login: ' + (k.label || v.slice(0,12)));
+};
+
+// Override loginOwner to save session
+const _loginOwnerOrig = loginOwner;
+loginOwner = function() {
+  const p = document.getElementById('owner-inp').value;
+  const err = document.getElementById('err-owner');
+  if (p !== OWNER_PASS) { err.classList.add('show'); return; }
+  err.classList.remove('show');
+  ownerMode = true;
+  saveSession('owner', 'owner');
+  hide('screen-login'); show('screen-owner');
+  renderKeys(); loadApiConfig(); loadUsageLogs();
+};
+
+// Override ownerGoApp to save session
+const _ownerGoAppOrig = ownerGoApp;
+ownerGoApp = function() {
+  hide('screen-owner'); ownerMode = true;
+  document.getElementById('user-badge').textContent = '👑 OWNER';
+  document.getElementById('user-badge').className = 'badge badge-owner';
+  saveSession('ownerapp', '👑 OWNER');
+  openApp();
+};
+
 /* ═══════════════ INIT ═══════════════ */
 document.getElementById('key-inp').addEventListener('keydown', e=>{ if(e.key==='Enter') loginKey(); });
+
+// Restore session after page refresh
+(function() {
+  const raw = sessionStorage.getItem('sm_sess');
+  if (!raw) return;
+  try {
+    const s = JSON.parse(raw);
+    if (s.type === 'owner') {
+      ownerMode = true;
+      hide('screen-login'); show('screen-owner');
+      renderKeys(); loadApiConfig(); loadUsageLogs();
+    } else if (s.type === 'ownerapp') {
+      ownerMode = true;
+      document.getElementById('user-badge').textContent = s.lbl;
+      document.getElementById('user-badge').className = 'badge badge-owner';
+      openApp();
+    } else if (s.type === 'user') {
+      ownerMode = false;
+      document.getElementById('user-badge').textContent = s.lbl;
+      document.getElementById('user-badge').className = 'badge badge-user';
+      openApp();
+    }
+  } catch(e) { clearSession(); }
+})();
 </script>
 </body>
 </html>
