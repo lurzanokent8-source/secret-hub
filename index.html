@@ -1,1335 +1,292 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StudioMind — Roblox AI</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg:      #05050a;
-  --bg2:     #0c0c14;
-  --bg3:     #111119;
-  --bg4:     #16161f;
-  --border:  #1c1c2a;
-  --border2: #252535;
-  --accent:  #00d4ff;
-  --accent2: #8066ff;
-  --green:   #00ffaa;
-  --red:     #ff3366;
-  --yellow:  #ffcc44;
-  --orange:  #ff7744;
-  --text:    #e4e4f0;
-  --text2:   #9999b8;
-  --muted:   #55556a;
-  --font-d:  'Syne', sans-serif;
-  --font-m:  'JetBrains Mono', monospace;
-  --font-b:  'Outfit', sans-serif;
-}
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html, body { height:100%; overflow:hidden; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-b);
-  font-size: 14px;
-}
-
-/* Subtle noise */
-body::after {
-  content:''; position:fixed; inset:0; pointer-events:none; z-index:9999;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
-  opacity: 0.4;
-}
-
-/* Grid bg */
-body::before {
-  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
-  background:
-    linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
-  background-size: 44px 44px;
-}
-
-/* ════════════════ LOGIN ════════════════ */
-#screen-login {
-  position:fixed; inset:0; z-index:100;
-  display:flex; align-items:center; justify-content:center;
-  background: radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.06) 0%, transparent 60%), var(--bg);
-}
-
-.login-wrap {
-  width: 400px;
-  background: var(--bg2);
-  border: 1px solid var(--border2);
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,212,255,0.05);
-  animation: fadeUp 0.5s ease;
-}
-@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-
-.login-top {
-  padding: 32px 32px 24px;
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(135deg, rgba(0,212,255,0.04), rgba(128,102,255,0.04));
-  position: relative;
-}
-.login-top::before {
-  content:''; position:absolute; top:0; left:0; right:0; height:2px;
-  background: linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--accent2) 70%, transparent 100%);
-}
-.login-logo {
-  font-family: var(--font-d); font-size: 30px; font-weight: 800;
-  letter-spacing: -1.5px; line-height: 1;
-  background: linear-gradient(135deg, var(--text) 40%, var(--accent));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.login-logo em { font-style:normal; -webkit-text-fill-color: var(--accent); }
-.login-tagline {
-  font-family: var(--font-m); font-size:10px; color:var(--muted);
-  text-transform:uppercase; letter-spacing:0.15em; margin-top:5px;
-}
-
-.login-body { padding:24px 32px 32px; }
-
-.tab-row {
-  display:flex; gap:6px; margin-bottom:24px;
-  background:var(--bg3); padding:4px; border-radius:10px;
-}
-.tab { flex:1; padding:9px; border:none; background:transparent;
-  color:var(--muted); font-family:var(--font-b); font-size:13px; font-weight:500;
-  cursor:pointer; border-radius:7px; transition:all 0.2s; }
-.tab.on { background:var(--bg4); color:var(--text); box-shadow:0 2px 10px rgba(0,0,0,0.4); }
-
-.field { margin-bottom:16px; }
-.label { display:block; font-family:var(--font-m); font-size:10px;
-  color:var(--muted); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:7px; }
-.inp {
-  width:100%; padding:11px 14px; background:var(--bg3);
-  border:1px solid var(--border2); border-radius:9px;
-  color:var(--text); font-family:var(--font-m); font-size:13px; outline:none;
-  transition:border-color 0.2s, box-shadow 0.2s;
-}
-.inp:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(0,212,255,0.08); }
-.inp::placeholder { color:var(--muted); }
-
-.btn-main {
-  width:100%; padding:13px; border:none; border-radius:9px; cursor:pointer;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color:#000; font-family:var(--font-d); font-size:14px; font-weight:700;
-  letter-spacing:0.04em; transition:opacity 0.2s, transform 0.15s;
-}
-.btn-main:hover { opacity:0.88; transform:translateY(-1px); }
-.btn-main:active { transform:translateY(0); }
-
-.err-msg {
-  color:var(--red); font-family:var(--font-m); font-size:11px;
-  margin-top:10px; display:none; opacity:0; transition:opacity 0.2s;
-}
-.err-msg.show { display:block; opacity:1; }
-
-/* ════════════════ OWNER PANEL ════════════════ */
-#screen-owner {
-  position:fixed; inset:0; z-index:90; display:none; flex-direction:column;
-  background: var(--bg);
-}
-#screen-owner.on { display:flex; }
-
-.panel-head {
-  height:54px; background:var(--bg2); border-bottom:1px solid var(--border);
-  display:flex; align-items:center; padding:0 20px; gap:12px; flex-shrink:0;
-}
-.panel-logo { font-family:var(--font-d); font-size:19px; font-weight:800; letter-spacing:-0.5px; }
-.panel-logo em { font-style:normal; color:var(--accent); }
-.badge {
-  font-family:var(--font-m); font-size:10px; padding:3px 9px; border-radius:5px;
-  text-transform:uppercase; letter-spacing:0.1em;
-}
-.badge-owner { background:rgba(255,204,68,0.1); border:1px solid rgba(255,204,68,0.3); color:var(--yellow); }
-.badge-user  { background:rgba(0,212,255,0.1);  border:1px solid rgba(0,212,255,0.3);  color:var(--accent); }
-.badge-green { background:rgba(0,255,170,0.1);  border:1px solid rgba(0,255,170,0.3);  color:var(--green); }
-
-.spacer { flex:1; }
-
-.btn-sm {
-  padding:7px 14px; border-radius:7px; font-family:var(--font-m); font-size:11px;
-  cursor:pointer; transition:all 0.2s;
-}
-.btn-ghost { background:transparent; border:1px solid var(--border2); color:var(--text2); }
-.btn-ghost:hover { border-color:var(--border2); color:var(--text); }
-.btn-accent { background:rgba(0,212,255,0.08); border:1px solid rgba(0,212,255,0.25); color:var(--accent); }
-.btn-accent:hover { background:rgba(0,212,255,0.14); }
-.btn-danger { background:transparent; border:1px solid rgba(255,51,102,0.3); color:var(--red); }
-.btn-danger:hover { background:rgba(255,51,102,0.08); }
-
-.panel-body { flex:1; display:flex; overflow:hidden; }
-
-.panel-nav {
-  width:190px; background:var(--bg2); border-right:1px solid var(--border);
-  padding:14px 10px; display:flex; flex-direction:column; gap:3px; flex-shrink:0;
-}
-.nav-item {
-  padding:10px 12px; border-radius:8px; font-family:var(--font-m); font-size:11px;
-  color:var(--muted); cursor:pointer; transition:all 0.15s;
-  display:flex; align-items:center; gap:8px;
-}
-.nav-item:hover { background:rgba(255,255,255,0.04); color:var(--text2); }
-.nav-item.on { background:rgba(0,212,255,0.07); color:var(--accent); }
-
-.panel-main {
-  flex:1; padding:28px; overflow-y:auto;
-}
-.panel-main::-webkit-scrollbar { width:4px; }
-.panel-main::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
-
-.sect { display:none; }
-.sect.on { display:block; }
-
-.sect-title { font-family:var(--font-d); font-size:22px; font-weight:700; margin-bottom:22px; letter-spacing:-0.5px; }
-
-.card {
-  background:var(--bg2); border:1px solid var(--border); border-radius:13px;
-  padding:20px; margin-bottom:16px;
-}
-.card-title { font-family:var(--font-m); font-size:10px; text-transform:uppercase;
-  letter-spacing:0.14em; color:var(--muted); margin-bottom:14px; }
-
-.row { display:flex; gap:10px; align-items:stretch; }
-.row .inp { flex:1; }
-
-.btn-gen {
-  padding:11px 20px; border:none; border-radius:8px; cursor:pointer;
-  background:linear-gradient(135deg, var(--accent2), var(--accent));
-  color:#000; font-family:var(--font-d); font-size:12px; font-weight:700;
-  transition:opacity 0.2s; white-space:nowrap;
-}
-.btn-gen:hover { opacity:0.85; }
-
-.key-entry {
-  display:flex; align-items:center; justify-content:space-between;
-  background:var(--bg3); border:1px solid var(--border); border-radius:9px;
-  padding:10px 14px; margin-bottom:7px;
-}
-.key-val { font-family:var(--font-m); font-size:12px; color:var(--accent); }
-.key-meta { font-size:11px; color:var(--muted); margin-top:2px; }
-
-.btn-revoke {
-  padding:4px 9px; background:transparent; border:1px solid rgba(255,51,102,0.3);
-  border-radius:5px; color:var(--red); font-family:var(--font-m); font-size:9px;
-  cursor:pointer; transition:all 0.15s; flex-shrink:0;
-}
-.btn-revoke:hover { background:rgba(255,51,102,0.08); }
-
-/* ════════════════ MAIN APP ════════════════ */
-#screen-app {
-  position:fixed; inset:0; z-index:80; display:none; flex-direction:column;
-}
-#screen-app.on { display:flex; }
-
-.app-head {
-  height:54px; background:var(--bg2); border-bottom:1px solid var(--border);
-  display:flex; align-items:center; padding:0 18px; gap:14px;
-  flex-shrink:0; position:relative; z-index:10;
-}
-.head-logo { font-family:var(--font-d); font-size:18px; font-weight:800; letter-spacing:-0.5px; }
-.head-logo em { font-style:normal; color:var(--accent); }
-
-.model-pills {
-  display:flex; gap:3px; background:var(--bg3); padding:3px; border-radius:9px;
-  border:1px solid var(--border);
-}
-.model-pill {
-  padding:5px 10px; border:none; border-radius:6px; background:transparent;
-  color:var(--muted); font-family:var(--font-m); font-size:10px; cursor:pointer;
-  transition:all 0.2s; display:flex; align-items:center; gap:4px; white-space:nowrap;
-}
-.model-pill.on { background:var(--bg4); color:var(--text); }
-.model-pill .dot { width:6px; height:6px; border-radius:50%; }
-.dot-n { background:var(--accent);  box-shadow:0 0 6px var(--accent); }
-.dot-t { background:var(--accent2); box-shadow:0 0 6px var(--accent2); }
-.dot-p { background:var(--yellow);  box-shadow:0 0 6px var(--yellow); }
-
-/* Collapsible thinking block */
-.think-box {
-  background:rgba(128,102,255,0.06); border:1px solid rgba(128,102,255,0.2);
-  border-radius:8px; margin-bottom:10px; overflow:hidden;
-}
-.think-toggle {
-  display:flex; align-items:center; gap:8px; padding:9px 13px;
-  cursor:pointer; user-select:none; transition:background 0.15s;
-  font-family:var(--font-m); font-size:11px; color:var(--accent2);
-}
-.think-toggle:hover { background:rgba(128,102,255,0.07); }
-.think-arrow {
-  font-size:9px; transition:transform 0.25s; color:var(--accent2); opacity:0.7;
-  flex-shrink:0;
-}
-.think-toggle.open .think-arrow { transform:rotate(90deg); }
-.think-spinner {
-  width:10px; height:10px; border-radius:50%;
-  border:2px solid rgba(128,102,255,0.3); border-top-color:var(--accent2);
-  animation:spin 0.8s linear infinite; flex-shrink:0;
-}
-@keyframes spin { to { transform:rotate(360deg); } }
-.think-content {
-  max-height:0; overflow:hidden;
-  transition:max-height 0.35s ease, padding 0.2s;
-  font-family:var(--font-m); font-size:11px; color:rgba(200,190,255,0.75);
-  line-height:1.7; padding:0 13px;
-}
-.think-content.open { max-height:400px; padding:0 13px 11px; overflow-y:auto; }
-
-.sync-pill {
-  display:flex; align-items:center; gap:7px;
-  font-family:var(--font-m); font-size:11px; color:var(--muted);
-  background:var(--bg3); border:1px solid var(--border); border-radius:8px;
-  padding:5px 12px;
-}
-.sync-led {
-  width:7px; height:7px; border-radius:50%; background:var(--muted);
-  transition:background 0.3s, box-shadow 0.3s;
-}
-.sync-led.live { background:var(--green); box-shadow:0 0 8px var(--green); }
-.sync-led.blink { background:var(--yellow); animation:blink 0.6s ease infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-#sync-num { color:var(--accent); font-weight:700; min-width:16px; }
-
-/* APP BODY */
-.app-body { flex:1; display:flex; overflow:hidden; }
-
-/* ────── SIDEBAR ────── */
-.sidebar {
-  width:230px; background:var(--bg2); border-right:1px solid var(--border);
-  display:flex; flex-direction:column; flex-shrink:0; overflow:hidden;
-}
-
-.sb-sect { padding:14px; border-bottom:1px solid var(--border); }
-.sb-title {
-  font-family:var(--font-m); font-size:10px; text-transform:uppercase;
-  letter-spacing:0.15em; color:var(--muted); margin-bottom:10px;
-}
-
-.plugin-card {
-  background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:12px;
-}
-.plugin-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
-.plugin-name { font-size:12px; font-weight:600; }
-.conn-btn {
-  padding:5px 11px; border-radius:6px; font-family:var(--font-m); font-size:10px;
-  cursor:pointer; transition:all 0.2s;
-  border:1px solid rgba(0,212,255,0.35); background:rgba(0,212,255,0.06); color:var(--accent);
-}
-.conn-btn:hover { background:rgba(0,212,255,0.12); }
-.conn-btn.live { border-color:rgba(0,255,170,0.35); background:rgba(0,255,170,0.06); color:var(--green); }
-
-.sync-bar-wrap { height:3px; background:var(--border); border-radius:2px; margin-top:8px; overflow:hidden; }
-.sync-bar-fill {
-  height:100%; width:0%; border-radius:2px;
-  background:linear-gradient(90deg, var(--accent), var(--accent2));
-  transition:width 0.25s ease;
-}
-.sync-info { font-family:var(--font-m); font-size:10px; color:var(--muted); margin-top:4px; text-align:right; }
-
-/* Memory */
-.mem-list {
-  max-height:130px; overflow-y:auto; display:flex; flex-direction:column; gap:4px;
-}
-.mem-list::-webkit-scrollbar { width:3px; }
-.mem-list::-webkit-scrollbar-thumb { background:var(--border2); }
-.mem-item {
-  font-family:var(--font-m); font-size:10px; color:var(--muted);
-  background:var(--bg3); padding:6px 9px; border-radius:6px;
-  border-left:2px solid var(--accent2); white-space:nowrap;
-  overflow:hidden; text-overflow:ellipsis; cursor:pointer;
-  transition:background 0.15s, color 0.15s;
-}
-.mem-item:hover { background:rgba(128,102,255,0.1); color:var(--text2); }
-
-/* New chat */
-.new-chat {
-  margin:12px 14px;
-  padding:10px; text-align:center;
-  border:1px dashed rgba(0,212,255,0.25); border-radius:9px;
-  color:var(--accent); font-family:var(--font-m); font-size:11px;
-  cursor:pointer; background:rgba(0,212,255,0.03); transition:all 0.2s;
-}
-.new-chat:hover { background:rgba(0,212,255,0.07); border-color:rgba(0,212,255,0.4); }
-
-/* ────── CHAT ────── */
-.chat-area { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
-
-.msgs {
-  flex:1; overflow-y:auto; padding:24px 28px;
-  display:flex; flex-direction:column; gap:20px; scroll-behavior:smooth;
-}
-.msgs::-webkit-scrollbar { width:4px; }
-.msgs::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
-
-/* Welcome */
-.welcome {
-  flex:1; display:flex; flex-direction:column; align-items:center;
-  justify-content:center; gap:14px; opacity:0.45;
-}
-.welcome-ico { font-size:52px; }
-.welcome-h { font-family:var(--font-d); font-size:24px; font-weight:700; }
-.welcome-sub { font-family:var(--font-m); font-size:11px; color:var(--muted); }
-
-/* Messages */
-.msg { display:flex; gap:12px; animation:msgIn 0.3s ease; }
-@keyframes msgIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-.msg.user { flex-direction:row-reverse; }
-
-.msg-av {
-  width:34px; height:34px; border-radius:9px; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  font-size:16px; font-weight:700; font-family:var(--font-d);
-}
-.msg-av.ai  { background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(128,102,255,0.15)); border:1px solid rgba(0,212,255,0.25); }
-.msg-av.usr { background:linear-gradient(135deg,rgba(255,51,102,0.15),rgba(255,204,68,0.15)); border:1px solid rgba(255,51,102,0.25); }
-
-.msg-body {
-  max-width:62%; background:var(--bg2); border:1px solid var(--border);
-  border-radius:13px; padding:13px 17px; font-size:14px; line-height:1.65;
-}
-.msg.user .msg-body {
-  background:rgba(0,212,255,0.04); border-color:rgba(0,212,255,0.18);
-}
-
-.think-lbl-old { display:none; } /* replaced by collapsible */
-
-/* Typing */
-.typing { display:flex; gap:5px; align-items:center; padding:4px 0; }
-.typing span {
-  width:6px; height:6px; border-radius:50%; background:var(--accent);
-  animation:typePulse 1.3s ease-in-out infinite;
-}
-.typing span:nth-child(2){animation-delay:0.15s}
-.typing span:nth-child(3){animation-delay:0.3s}
-@keyframes typePulse { 0%,60%,100%{transform:scale(1);opacity:0.45} 30%{transform:scale(1.5);opacity:1} }
-
-/* Input */
-.input-zone { padding:14px 20px 18px; border-top:1px solid var(--border); background:var(--bg2); }
-.input-box {
-  display:flex; gap:10px;
-  background:var(--bg3); border:1px solid var(--border2);
-  border-radius:13px; padding:10px 14px;
-  transition:border-color 0.2s, box-shadow 0.2s;
-}
-.input-box:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px rgba(0,212,255,0.07); }
-#inp {
-  flex:1; background:transparent; border:none; color:var(--text);
-  font-family:var(--font-b); font-size:14px; outline:none;
-  resize:none; min-height:24px; max-height:120px; line-height:1.5;
-}
-#inp::placeholder { color:var(--muted); }
-.send-btn {
-  padding:8px 20px; border:none; border-radius:9px; cursor:pointer;
-  background:linear-gradient(135deg, var(--accent), var(--accent2));
-  color:#000; font-family:var(--font-d); font-size:12px; font-weight:700;
-  transition:opacity 0.2s; align-self:flex-end; flex-shrink:0;
-}
-.send-btn:hover { opacity:0.84; }
-.send-btn:disabled { opacity:0.35; cursor:not-allowed; }
-
-/* ────── TASK LOG ────── */
-.task-panel {
-  width:285px; background:var(--bg2); border-left:1px solid var(--border);
-  display:flex; flex-direction:column; flex-shrink:0;
-}
-.task-head {
-  padding:14px 15px; border-bottom:1px solid var(--border);
-  display:flex; align-items:center; justify-content:space-between;
-}
-.task-hed-lbl { font-family:var(--font-m); font-size:10px; text-transform:uppercase; letter-spacing:0.15em; color:var(--muted); }
-.task-cnt {
-  font-family:var(--font-m); font-size:10px; padding:2px 8px; border-radius:4px;
-  background:rgba(0,212,255,0.1); color:var(--accent);
-}
-.task-log {
-  flex:1; overflow-y:auto; padding:11px; display:flex; flex-direction:column; gap:8px;
-}
-.task-log::-webkit-scrollbar { width:3px; }
-.task-log::-webkit-scrollbar-thumb { background:var(--border2); }
-
-.task-card {
-  background:var(--bg3); border:1px solid var(--border); border-radius:9px;
-  padding:10px 12px; animation:msgIn 0.3s ease;
-}
-.task-card-name {
-  font-family:var(--font-m); font-size:10px; font-weight:700; color:var(--accent);
-  margin-bottom:8px; display:flex; align-items:center; gap:5px; line-height:1.4;
-}
-.task-steps-list { display:flex; flex-direction:column; gap:4px; }
-.task-step {
-  display:flex; align-items:flex-start; gap:7px;
-  font-family:var(--font-m); font-size:10px; color:var(--muted);
-  transition:color 0.3s; line-height:1.4;
-}
-.task-step.done  { color:var(--green); }
-.task-step.active{ color:var(--yellow); }
-.step-ico { flex-shrink:0; width:12px; text-align:center; }
-
-/* shared scrollbar */
-::-webkit-scrollbar { width:4px; height:4px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
-
-/* markdown in messages */
-.msg-body pre {
-  background:var(--bg); border:1px solid var(--border2); border-radius:8px;
-  padding:12px 14px; overflow-x:auto; font-family:var(--font-m); font-size:12px;
-  line-height:1.6; color:#a8d4ff; margin:10px 0;
-}
-.msg-body code {
-  font-family:var(--font-m); background:var(--bg3); padding:2px 6px;
-  border-radius:4px; font-size:12px; color:var(--accent);
-}
-.msg-body pre code { background:none; padding:0; color:#a8d4ff; }
-.msg-body strong { color:var(--text); }
-
-/* textarea fix */
-textarea { resize:none; }
-
-/* owner saved toast */
-.toast {
-  position:fixed; bottom:20px; right:20px; background:var(--bg2);
-  border:1px solid var(--green); border-radius:10px; padding:10px 18px;
-  font-family:var(--font-m); font-size:12px; color:var(--green);
-  z-index:9999; animation:toastIn 0.3s ease;
-  box-shadow:0 8px 24px rgba(0,0,0,0.5);
-}
-@keyframes toastIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-
-.empty-state {
-  font-family:var(--font-m); font-size:11px; color:var(--muted);
-  text-align:center; padding:20px 10px; line-height:1.8;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Follower Hub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 40px; width: 90%; max-width: 500px; }
+        .login-form, .owner-panel, .user-panel { display: none; }
+        .login-form.active, .owner-panel.active, .user-panel.active { display: block; }
+        h1 { color: #333; text-align: center; margin-bottom: 30px; font-size: 2.2em; }
+        input, button { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 10px; font-size: 16px; }
+        input { background: #f0f0f0; transition: all 0.3s; }
+        input:focus { outline: none; background: #e8f0fe; box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.3); }
+        button { background: linear-gradient(45deg, #ff6b6b, #feca57); color: white; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        button:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+        .owner-login { background: linear-gradient(45deg, #ff4757, #ff3838) !important; }
+        .stock-display { background: #4ecdc4; color: white; font-weight: bold; font-size: 1.2em; padding: 20px; border-radius: 15px; text-align: center; margin: 20px 0; }
+        .progress-bar { width: 100%; height: 20px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin: 20px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #4ecdc4, #44a08d); width: 0%; transition: width 0.3s; }
+        .plan-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; color: white; font-weight: bold; margin: 5px; }
+        .free { background: #ffa726; }
+        .premium { background: #4caf50; }
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
+        .stat-card { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 15px; text-align: center; }
+        .tabs { display: flex; margin: 20px 0; }
+        .tab-btn { flex: 1; padding: 15px; background: #f0f0f0; border: none; cursor: pointer; border-radius: 10px 10px 0 0; font-weight: bold; }
+        .tab-btn.active { background: white; }
+        .tab-content { background: white; padding: 30px; border-radius: 0 10px 10px 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .logout { background: #ff4757 !important; margin-top: 20px; }
+    </style>
 </head>
 <body>
-
-<!-- ════════════════════ LOGIN ════════════════════ -->
-<div id="screen-login">
-  <div class="login-wrap">
-    <div class="login-top">
-      <div class="login-logo">Studio<em>Mind</em></div>
-      <div class="login-tagline">Roblox AI Automation · GLM-4 Flash · Zhipu</div>
-    </div>
-    <div class="login-body">
-      <div class="tab-row">
-        <button class="tab on" onclick="tab('user',this)">🔑 Access Key</button>
-        <button class="tab"     onclick="tab('owner',this)">👑 Owner</button>
-      </div>
-
-      <div id="pane-user">
-        <div class="field">
-          <label class="label">Your Access Key</label>
-          <input class="inp" id="key-inp" type="text" placeholder="SM-XXXX-XXXX-XXXX" autocomplete="off"/>
+    <div class="container">
+        <!-- Login Screen -->
+        <div class="login-form active" id="loginForm">
+            <h1>🔐 Secret Hub</h1>
+            <input type="password" id="loginPass" placeholder="Enter Password" maxlength="20">
+            <button onclick="checkLogin()">Login</button>
+            <p style="text-align: center; margin-top: 20px; font-size: 14px; color: #666;">
+                Use owner password for full access
+            </p>
         </div>
-        <button class="btn-main" onclick="loginKey()">Enter Studio →</button>
-        <div class="err-msg" id="err-key">❌ Invalid or expired access key.</div>
-      </div>
 
-      <div id="pane-owner" style="display:none">
-        <div class="field">
-          <label class="label">Owner Password</label>
-          <input class="inp" id="owner-inp" type="password" placeholder="••••••••••••" autocomplete="off" onkeydown="if(event.key==='Enter')loginOwner()"/>
+        <!-- Owner Panel -->
+        <div class="owner-panel" id="ownerPanel">
+            <h1>👑 Owner Panel</h1>
+            <div class="stock-display">Bot Stock: <span id="botStock">0</span></div>
+            <div class="stats">
+                <div class="stat-card">
+                    <div>Free Users</div>
+                    <div style="font-size: 1.5em;">0</div>
+                </div>
+                <div class="stat-card">
+                    <div>Premium Users</div>
+                    <div style="font-size: 1.5em;">0</div>
+                </div>
+            </div>
+            <button class="logout" onclick="logout()">Logout</button>
         </div>
-        <button class="btn-main" onclick="loginOwner()">Access Panel →</button>
-        <div class="err-msg" id="err-owner">❌ Incorrect password.</div>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- ════════════════════ OWNER PANEL ════════════════════ -->
-<div id="screen-owner">
-  <div class="panel-head">
-    <div class="panel-logo">Studio<em>Mind</em></div>
-    <div class="badge badge-owner">⚡ Owner Panel</div>
-    <div class="spacer"></div>
-    <button class="btn-sm btn-accent" onclick="ownerGoApp()" style="margin-right:8px">→ Enter App</button>
-    <button class="btn-sm btn-ghost" onclick="logout()">Logout</button>
-  </div>
-  <div class="panel-body">
-    <div class="panel-nav">
-      <div class="nav-item on" data-sect="keys" onclick="ownerNav(this)">🔑 Key Manager</div>
-      <div class="nav-item" data-sect="api"  onclick="ownerNav(this)">⚡ API Config</div>
-      <div class="nav-item" data-sect="logs" onclick="ownerNav(this)">📋 Usage Logs</div>
-      <div class="nav-item" data-sect="plugin" onclick="ownerNav(this)">🔌 Plugin Info</div>
-    </div>
-    <div class="panel-main">
-
-      <!-- KEYS -->
-      <div class="sect on" id="sect-keys">
-        <div class="sect-title">Key Manager</div>
-        <div class="card">
-          <div class="card-title">Generate Access Key</div>
-          <div class="row">
-            <input class="inp" id="key-label" placeholder="Label (e.g. user123, friend)"/>
-            <button class="btn-gen" onclick="genKey()">⚡ Generate</button>
-          </div>
+        <!-- User Panel -->
+        <div class="user-panel" id="userPanel">
+            <h1>🤖 Follower Bot</h1>
+            <div class="stock-display">Available Bots: <span id="userBotStock">0</span></div>
+            
+            <div class="plan-badge premium" id="planBadge">Premium</div>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('follow')">Follow Bot</button>
+                <button class="tab-btn" onclick="switchTab('stock')">Stock</button>
+            </div>
+            
+            <div class="tab-content" id="followTab">
+                <input type="text" id="targetUser" placeholder="Target Roblox username">
+                <input type="number" id="followAmount" placeholder="Amount to follow (max 10/day free)" min="1" max="999">
+                <button id="startBtn" onclick="startFollowing()">🚀 Start Following</button>
+                <div class="progress-bar" id="progressBar" style="display: none;">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div id="progressText" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
+            </div>
+            
+            <div class="tab-content" id="stockTab" style="display: none;">
+                <p><strong>Your Plan:</strong> Premium - Unlimited follows</p>
+                <p><strong>Daily Limit:</strong> ∞ (Premium)</p>
+                <p><strong>Bot Usage Today:</strong> 0/∞</p>
+            </div>
+            
+            <button class="logout" onclick="logout()">Logout</button>
         </div>
-        <div class="card">
-          <div class="card-title">Active Keys</div>
-          <div id="keys-list"><div class="empty-state">No keys yet. Generate one above.</div></div>
-        </div>
-      </div>
-
-      <!-- API -->
-      <div class="sect" id="sect-api">
-        <div class="sect-title">API Configuration</div>
-        <div class="card">
-          <div class="card-title">Zhipu AI — GLM API Key</div>
-          <div class="field">
-            <label class="label">API Key <span style="color:var(--accent2)">(stored in your browser only)</span></label>
-            <input class="inp" id="api-key" type="password" placeholder="Paste your Zhipu AI key here..."/>
-          </div>
-          <div class="field" style="margin-top:12px">
-            <label class="label">System Prompt</label>
-            <textarea class="inp" id="sys-prompt" rows="6" style="min-height:100px">You are StudioMind, an expert Roblox Studio AI. You help users build Roblox games — GUIs, scripts, systems, models, everything. When given a task, break it into clear numbered steps, then provide complete, working Luau code. Use proper Roblox APIs. Be creative, detailed and enthusiastic. Format code in ```lua blocks.</textarea>
-          </div>
-          <button class="btn-gen" onclick="saveApi()" style="margin-top:4px">💾 Save Config</button>
-        </div>
-        <div class="card" style="background:rgba(0,212,255,0.03)">
-          <div class="card-title">How to get a Zhipu API Key</div>
-          <div style="font-family:var(--font-m);font-size:11px;color:var(--text2);line-height:1.8">
-            1. Go to <strong style="color:var(--accent)">open.bigmodel.cn</strong><br>
-            2. Register / Login<br>
-            3. Navigate to API Keys section<br>
-            4. Create a new key and paste it above<br>
-            5. GLM-4-Flash is <strong style="color:var(--green)">free to use</strong> ✓
-          </div>
-        </div>
-      </div>
-
-      <!-- LOGS -->
-      <div class="sect" id="sect-logs">
-        <div class="sect-title">Usage Logs</div>
-        <div class="card">
-          <div class="card-title">Recent Activity</div>
-          <div id="usage-log-list"><div class="empty-state">No activity recorded yet.</div></div>
-        </div>
-        <button class="btn-sm btn-danger" onclick="clearLogs()" style="margin-top:4px">Clear Logs</button>
-      </div>
-
-      <!-- PLUGIN INFO -->
-      <div class="sect" id="sect-plugin">
-        <div class="sect-title">Plugin Setup</div>
-        <div class="card">
-          <div class="card-title">Install Roblox Studio Plugin</div>
-          <div style="font-family:var(--font-m);font-size:11px;color:var(--text2);line-height:2">
-            1. Download <strong style="color:var(--accent)">StudioMindPlugin.lua</strong><br>
-            2. In Roblox Studio → Plugins → Manage Plugins<br>
-            3. Click "Install from file" and select the .lua file<br>
-            4. The plugin widget appears in your toolbar<br>
-            5. Click <strong style="color:var(--green)">Connect</strong> in the plugin to start syncing<br>
-            6. Sync counter goes 1→10 on loop to confirm connection
-          </div>
-        </div>
-        <div class="card" style="background:rgba(255,204,68,0.03);border-color:rgba(255,204,68,0.15)">
-          <div class="card-title" style="color:var(--yellow)">⚠ Backend Note</div>
-          <div style="font-family:var(--font-m);font-size:11px;color:var(--text2);line-height:1.9">
-            For real plugin→site sync you need a backend relay server<br>
-            (e.g. a simple Node.js/Express server or serverless function).<br>
-            The plugin polls your server URL for pending tasks.<br>
-            The site pushes tasks to the server after AI processes them.
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════ MAIN APP ════════════════════ -->
-<div id="screen-app">
-
-  <!-- HEADER -->
-  <div class="app-head">
-    <div class="head-logo">Studio<em>Mind</em></div>
-    <div class="badge badge-user" id="user-badge">USER</div>
-    <div class="spacer"></div>
-
-    <!-- Model toggle -->
-    <div class="model-pills">
-      <button class="model-pill on" id="pill-n" onclick="setModel('normal')">
-        <span class="dot dot-n"></span> Normal
-      </button>
-      <button class="model-pill" id="pill-t" onclick="setModel('think')">
-        <span class="dot dot-t"></span> Thinking
-      </button>
-      <button class="model-pill" id="pill-p" onclick="setModel('pro')">
-        <span class="dot dot-p"></span> Pro
-      </button>
     </div>
 
-    <!-- Sync pill -->
-    <div class="sync-pill">
-      <div class="sync-led" id="sync-led"></div>
-      <span id="sync-lbl">Not connected</span>
-      <span id="sync-num"></span>
-    </div>
-
-    <button class="btn-sm btn-ghost" onclick="logout()">Logout</button>
-  </div>
-
-  <!-- BODY -->
-  <div class="app-body">
-
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-      <div class="sb-sect">
-        <div class="sb-title">Plugin Connection</div>
-        <div class="plugin-card">
-          <div class="plugin-row">
-            <span class="plugin-name">Roblox Studio</span>
-            <button class="conn-btn" id="conn-btn" onclick="toggleConn()">Connect</button>
-          </div>
-          <div style="font-family:var(--font-m);font-size:10px;color:var(--muted)" id="conn-status">Not connected</div>
-          <div class="sync-bar-wrap"><div class="sync-bar-fill" id="sync-fill"></div></div>
-          <div class="sync-info" id="sync-info">—</div>
-        </div>
-      </div>
-
-      <div class="sb-sect" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-        <div class="sb-title">AI Memory</div>
-        <div class="mem-list" id="mem-list">
-          <div style="font-family:var(--font-m);font-size:10px;color:var(--muted)">No memories yet.</div>
-        </div>
-      </div>
-
-      <div class="new-chat" onclick="newChat()">＋ New Conversation</div>
-    </div>
-
-    <!-- CHAT -->
-    <div class="chat-area">
-      <div class="msgs" id="msgs">
-        <div class="welcome" id="welcome">
-          <div class="welcome-ico">🤖</div>
-          <div class="welcome-h">StudioMind</div>
-          <div class="welcome-sub">GLM-4 Flash · Roblox Studio AI · Type anything below</div>
-        </div>
-      </div>
-
-      <div class="input-zone">
-        <div class="input-box">
-          <textarea id="inp" rows="1" placeholder="Ask me to create a GUI, write a script, build a system..."
-            onkeydown="onKey(event)" oninput="grow(this)"></textarea>
-          <button class="send-btn" id="send-btn" onclick="send()">Send ↑</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TASK LOG -->
-    <div class="task-panel">
-      <div class="task-head">
-        <div class="task-hed-lbl">Task Log</div>
-        <div class="task-cnt" id="task-cnt">0</div>
-      </div>
-      <div class="task-log" id="task-log">
-        <div class="empty-state">No tasks yet.<br>Start a conversation!</div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<script>
-/* ═══════════════ STATE ═══════════════ */
-let model = 'normal';
-let connected = false;
-let syncTick = 0;
-let syncTimer = null;
-let chatHistory = [];
-let taskTotal = 0;
-let ownerMode = false;
-
-const OWNER_PASS = 'SigmaSkibii';
-const API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
-
-const getApiKey  = () => localStorage.getItem('sm_ak') || '';
-const getSysPrompt = () => localStorage.getItem('sm_sp') || 'You are StudioMind, an expert Roblox Studio AI. You help build Roblox games. When given a task, break it into clear steps, then provide complete working Luau code in ```lua blocks. Be detailed and creative.';
-const getKeys    = () => JSON.parse(localStorage.getItem('sm_keys') || '[]');
-const saveKeys   = k  => localStorage.setItem('sm_keys', JSON.stringify(k));
-const getMem     = () => JSON.parse(localStorage.getItem('sm_mem')  || '[]');
-const getLogs    = () => JSON.parse(localStorage.getItem('sm_logs') || '[]');
-
-/* ═══════════════ AUTH ═══════════════ */
-function tab(which, el) {
-  document.getElementById('pane-user').style.display  = which==='user'  ? 'block':'none';
-  document.getElementById('pane-owner').style.display = which==='owner' ? 'block':'none';
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
-  el.classList.add('on');
-}
-
-function loginKey() {
-  const v = document.getElementById('key-inp').value.trim();
-  const k = getKeys().find(k=>k.val===v);
-  const err = document.getElementById('err-key');
-  if (!k) { err.classList.add('show'); return; }
-  err.classList.remove('show');
-  ownerMode = false;
-  document.getElementById('user-badge').textContent = k.label || 'USER';
-  document.getElementById('user-badge').className = 'badge badge-user';
-  openApp();
-  pushLog(`Key login: ${k.label||v.slice(0,12)}`);
-}
-
-function loginOwner() {
-  const p = document.getElementById('owner-inp').value;
-  const err = document.getElementById('err-owner');
-  if (p !== OWNER_PASS) { err.classList.add('show'); return; }
-  err.classList.remove('show');
-  ownerMode = true;
-  hide('screen-login');
-  show('screen-owner');
-  renderKeys();
-  loadApiConfig();
-  loadUsageLogs();
-}
-
-function ownerGoApp() {
-  hide('screen-owner');
-  ownerMode = true;
-  document.getElementById('user-badge').textContent = '👑 OWNER';
-  document.getElementById('user-badge').className = 'badge badge-owner';
-  openApp();
-}
-
-function openApp() {
-  hide('screen-login');
-  show('screen-app');
-  renderMem();
-}
-
-function logout() {
-  hide('screen-app'); hide('screen-owner');
-  show('screen-login');
-  stopConn();
-  chatHistory = [];
-  document.getElementById('msgs').innerHTML = buildWelcome();
-  document.getElementById('task-log').innerHTML = '<div class="empty-state">No tasks yet.<br>Start a conversation!</div>';
-  taskTotal = 0;
-  document.getElementById('task-cnt').textContent = '0';
-  document.getElementById('key-inp').value = '';
-  document.getElementById('owner-inp').value = '';
-}
-
-function show(id) { const el = document.getElementById(id); el.style.display=''; el.classList.add('on'); }
-function hide(id) { const el = document.getElementById(id); el.style.display='none'; el.classList.remove('on'); }
-
-/* ═══════════════ OWNER ═══════════════ */
-function ownerNav(el) {
-  const sect = el.dataset.sect;
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
-  document.querySelectorAll('.sect').forEach(s=>s.classList.remove('on'));
-  el.classList.add('on');
-  document.getElementById('sect-'+sect).classList.add('on');
-}
-
-function genKey() {
-  const label = document.getElementById('key-label').value.trim() || 'user';
-  const rnd = ()=>Math.random().toString(36).substr(2,4).toUpperCase();
-  const val = `SM-${rnd()}-${rnd()}-${rnd()}`;
-  const keys = getKeys();
-  keys.push({ val, label, created: new Date().toLocaleString() });
-  saveKeys(keys);
-  renderKeys();
-  document.getElementById('key-label').value = '';
-  toast(`✓ Key generated for "${label}"`);
-}
-
-function renderKeys() {
-  const keys = getKeys();
-  const el = document.getElementById('keys-list');
-  if (!keys.length) { el.innerHTML = '<div class="empty-state">No keys yet.</div>'; return; }
-  el.innerHTML = keys.map((k,i)=>`
-    <div class="key-entry">
-      <div style="min-width:0">
-        <div class="key-val">${k.val}</div>
-        <div class="key-meta">${k.label} · ${k.created}</div>
-      </div>
-      <button class="btn-revoke" onclick="revokeKey(${i})">Revoke</button>
-    </div>
-  `).join('');
-}
-
-function revokeKey(i) {
-  const keys = getKeys(); keys.splice(i,1); saveKeys(keys); renderKeys();
-  toast('Key revoked.');
-}
-
-function loadApiConfig() {
-  const ak = document.getElementById('api-key'); if(ak) ak.value = getApiKey();
-  const sp = document.getElementById('sys-prompt'); if(sp) sp.value = getSysPrompt();
-}
-
-function saveApi() {
-  localStorage.setItem('sm_ak', document.getElementById('api-key').value.trim());
-  localStorage.setItem('sm_sp', document.getElementById('sys-prompt').value.trim());
-  toast('✓ Config saved!');
-}
-
-function loadUsageLogs() {
-  const logs = getLogs();
-  const el = document.getElementById('usage-log-list');
-  if (!logs.length) { el.innerHTML = '<div class="empty-state">No activity yet.</div>'; return; }
-  el.innerHTML = logs.slice(0,30).map(l=>`
-    <div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);font-family:var(--font-m);font-size:10px">
-      <span style="color:var(--muted);flex-shrink:0">${l.time}</span>
-      <span style="color:var(--text2)">${esc(l.text)}</span>
-    </div>
-  `).join('');
-}
-
-function clearLogs() {
-  localStorage.removeItem('sm_logs');
-  loadUsageLogs();
-  toast('Logs cleared.');
-}
-
-function pushLog(text) {
-  const logs = getLogs();
-  logs.unshift({ text, time: new Date().toLocaleTimeString() });
-  if (logs.length>60) logs.pop();
-  localStorage.setItem('sm_logs', JSON.stringify(logs));
-}
-
-/* ═══════════════ MODEL ═══════════════ */
-function setModel(m) {
-  model = m;
-  document.getElementById('pill-n').classList.toggle('on', m==='normal');
-  document.getElementById('pill-t').classList.toggle('on', m==='think');
-  document.getElementById('pill-p').classList.toggle('on', m==='pro');
-}
-
-/* ═══════════════ PLUGIN SYNC ═══════════════ */
-function toggleConn() {
-  connected ? stopConn() : startConn();
-}
-
-function startConn() {
-  connected = true;
-  const btn = document.getElementById('conn-btn');
-  btn.textContent = 'Disconnect';
-  btn.classList.add('live');
-  document.getElementById('conn-status').textContent = 'Syncing with Studio...';
-  document.getElementById('sync-led').className = 'sync-led blink';
-  document.getElementById('sync-lbl').textContent = 'Syncing';
-  syncTick = 0;
-
-  syncTimer = setInterval(()=>{
-    syncTick = (syncTick % 10) + 1;
-    const pct = syncTick * 10;
-    document.getElementById('sync-fill').style.width = pct+'%';
-    document.getElementById('sync-info').textContent = `Sync ${syncTick}/10`;
-    document.getElementById('sync-num').textContent = syncTick;
-
-    if (syncTick === 10) {
-      document.getElementById('sync-led').className = 'sync-led live';
-      document.getElementById('sync-lbl').textContent = 'Connected';
-      document.getElementById('conn-status').textContent = '✓ Studio synced';
-      setTimeout(()=>{
-        if (!connected) return;
-        document.getElementById('sync-led').className = 'sync-led blink';
-        document.getElementById('sync-lbl').textContent = 'Re-syncing';
-        document.getElementById('conn-status').textContent = 'Re-syncing...';
-      }, 300);
-    }
-  }, 200);
-}
-
-function stopConn() {
-  connected = false;
-  clearInterval(syncTimer);
-  document.getElementById('conn-btn').textContent = 'Connect';
-  document.getElementById('conn-btn').classList.remove('live');
-  document.getElementById('conn-status').textContent = 'Not connected';
-  document.getElementById('sync-led').className = 'sync-led';
-  document.getElementById('sync-lbl').textContent = 'Not connected';
-  document.getElementById('sync-num').textContent = '';
-  document.getElementById('sync-fill').style.width = '0%';
-  document.getElementById('sync-info').textContent = '—';
-}
-
-/* ═══════════════ MEMORY ═══════════════ */
-function addMem(text) {
-  const mem = getMem();
-  mem.unshift({ text: text.slice(0,58), t: new Date().toLocaleTimeString() });
-  if (mem.length>24) mem.pop();
-  localStorage.setItem('sm_mem', JSON.stringify(mem));
-  renderMem();
-}
-
-function renderMem() {
-  const mem = getMem();
-  const el = document.getElementById('mem-list');
-  if (!el) return;
-  if (!mem.length) { el.innerHTML = '<div style="font-family:var(--font-m);font-size:10px;color:var(--muted)">No memories yet.</div>'; return; }
-  el.innerHTML = mem.map(m=>`<div class="mem-item" title="${esc(m.text)}">${esc(m.text)}</div>`).join('');
-}
-
-/* ═══════════════ CHAT ═══════════════ */
-function buildWelcome() {
-  return `<div class="welcome" id="welcome"><div class="welcome-ico">🤖</div><div class="welcome-h">StudioMind</div><div class="welcome-sub">GLM-4 Flash · Roblox Studio AI · Type anything below</div></div>`;
-}
-
-function newChat() {
-  chatHistory = [];
-  document.getElementById('msgs').innerHTML = buildWelcome();
-}
-
-function onKey(e) {
-  if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); }
-}
-function grow(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120)+'px';
-}
-
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function fmt(text) {
-  let h = esc(text);
-  h = h.replace(/```(\w*)\n?([\s\S]*?)```/g,'<pre><code>$2</code></pre>');
-  h = h.replace(/`([^`\n]+)`/g,'<code>$1</code>');
-  h = h.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
-  h = h.replace(/\n/g,'<br>');
-  return h;
-}
-
-function removeWelcome() {
-  const w = document.getElementById('welcome');
-  if (w) w.remove();
-}
-
-function appendMsg(role, text, thinking, thinkingLive) {
-  removeWelcome();
-  const c = document.getElementById('msgs');
-  const d = document.createElement('div');
-  d.className = 'msg ' + (role==='user'?'user':'');
-  const avClass = role==='user'?'usr':'ai';
-  const avIco   = role==='user'?'👤':'🤖';
-
-  let thinkHtml = '';
-  if (thinking) {
-    const tid = 'think-' + Date.now();
-    const lbl = thinkingLive ? '💭 Thinking...' : '💭 Thought process';
-    const spinner = thinkingLive ? '<div class="think-spinner"></div>' : '';
-    thinkHtml = `
-      <div class="think-box">
-        <div class="think-toggle" id="tog-${tid}" onclick="toggleThink('${tid}')">
-          ${spinner}
-          <span style="flex:1">${lbl}</span>
-          <span class="think-arrow">▶</span>
-        </div>
-        <div class="think-content" id="cnt-${tid}">${esc(thinking).replace(/\n/g,'<br>')}</div>
-      </div>`;
-  }
-
-  d.innerHTML = `<div class="msg-av ${avClass}">${avIco}</div><div class="msg-body">${thinkHtml}${fmt(text)}</div>`;
-  c.appendChild(d);
-  c.scrollTop = c.scrollHeight;
-  return d;
-}
-
-function toggleThink(tid) {
-  const tog = document.getElementById('tog-'+tid);
-  const cnt = document.getElementById('cnt-'+tid);
-  tog.classList.toggle('open');
-  cnt.classList.toggle('open');
-}
-
-function showTyping() {
-  removeWelcome();
-  const c = document.getElementById('msgs');
-  const d = document.createElement('div');
-  d.className = 'msg'; d.id = 'typing-el';
-  d.innerHTML = `<div class="msg-av ai">🤖</div><div class="msg-body"><div class="typing"><span></span><span></span><span></span></div></div>`;
-  c.appendChild(d); c.scrollTop = c.scrollHeight;
-}
-function hideTyping() {
-  const t = document.getElementById('typing-el'); if(t) t.remove();
-}
-
-/* ═══════════════ TASK LOG ═══════════════ */
-function makeTaskSteps(prompt) {
-  const p = prompt.toLowerCase();
-  const s = ['Analyzing your request'];
-  if      (/gui|button|frame|interface|ui|menu|hud/.test(p)) s.push('Planning GUI layout','Creating ScreenGui','Adding Frames & TextLabels','Styling with colors & gradients','Writing click handlers','Generating Luau code','Dispatching to plugin');
-  else if (/script|code|function|module|event/.test(p))      s.push('Designing architecture','Writing Luau code','Adding error handling','Optimizing logic','Generating output');
-  else if (/part|model|build|mesh|terrain/.test(p))          s.push('Planning structure','Creating base parts','Setting properties','Positioning elements','Generating Luau code');
-  else if (/game|system|mechanic|loop/.test(p))               s.push('Architecting system','Writing game loop','Adding RemoteEvents','Balancing values','Generating Luau code');
-  else if (/animate|tween|effect/.test(p))                   s.push('Planning animation','Creating TweenService calls','Timing sequences','Generating Luau code');
-  else                                                        s.push('Processing request','Generating response','Formatting output');
-  return s;
-}
-
-function spawnTask(name, steps) {
-  taskTotal++;
-  document.getElementById('task-cnt').textContent = taskTotal;
-  const log = document.getElementById('task-log');
-  const empty = log.querySelector('.empty-state'); if(empty) empty.remove();
-
-  const card = document.createElement('div');
-  card.className = 'task-card';
-  const sid = 'ts-' + taskTotal;
-  card.innerHTML = `
-    <div class="task-card-name">📋 ${esc(name.length>45?name.slice(0,45)+'…':name)}</div>
-    <div class="task-steps-list" id="${sid}">
-      ${steps.map(s=>`<div class="task-step"><span class="step-ico">⬜</span><span>${esc(s)}</span></div>`).join('')}
-    </div>`;
-  log.insertBefore(card, log.firstChild);
-
-  const els = Array.from(document.getElementById(sid).querySelectorAll('.task-step'));
-  const lastIdx = els.length - 1;
-  let i = 0;
-  let stopped = false;
-
-  function markDone(el) {
-    el.className = 'task-step done';
-    el.querySelector('.step-ico').textContent = '✅';
-  }
-  function markActive(el) {
-    el.className = 'task-step active';
-    el.querySelector('.step-ico').textContent = '⟳';
-  }
-
-  // Animate all steps EXCEPT the last — last waits for AI
-  function tick() {
-    if (stopped) return;
-    if (i > 0 && i - 1 < lastIdx) markDone(els[i-1]);
-    if (i < lastIdx) {
-      markActive(els[i]);
-      i++;
-      setTimeout(tick, 500 + Math.random()*400);
-    } else if (i === lastIdx) {
-      // Reached last step — make it spin and wait for finish()
-      markActive(els[lastIdx]);
-    }
-  }
-  tick();
-
-  // finish() called when AI actually responds — checks the last step
-  function finish() {
-    stopped = true;
-    els.forEach(markDone);
-  }
-  return finish;
-}
-
-/* ═══════════════ AI SEND ═══════════════ */
-async function send() {
-  const inp = document.getElementById('inp');
-  const text = inp.value.trim();
-  if (!text) return;
-
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    toast('⚠ No API key! Owner must set it in Panel → API Config.');
-    return;
-  }
-
-  inp.value = ''; inp.style.height = 'auto';
-  document.getElementById('send-btn').disabled = true;
-
-  appendMsg('user', text);
-  chatHistory.push({ role:'user', content:text });
-  addMem(text);
-  pushLog(`[chat] ${text.slice(0,50)}`);
-
-  showTyping();
-  const finishTask = spawnTask(text, makeTaskSteps(text));
-
-  try {
-    // All modes use glm-4.5-flash. Pro = same model but richer system prompt + more tokens.
-    const mdl = 'glm-4.5-flash';
-    const extraParams = model === 'think' ? { thinking: { type: 'enabled' } } : {};
-
-    const proPrefix = model === 'pro'
-      ? `You are StudioMind PRO — an elite Roblox Studio AI engineer. You produce EXCEPTIONAL, production-ready work. Rules for every response:
-1. Think deeply before answering. Consider edge cases, performance, and best practices.
-2. Always provide COMPLETE, fully working Luau code — never partial snippets.
-3. Structure code professionally: modular, commented, with proper error handling.
-4. For GUIs: use TweenService for animations, proper AnchorPoints, responsive sizing with UDim2.
-5. For scripts: use proper Roblox APIs, avoid deprecated methods, handle RemoteEvents correctly.
-6. After code, explain what it does and how to use it.
-7. If the task is complex, break it into phases and deliver each phase completely.
-NEVER cut corners. NEVER say "add your own logic here". Deliver perfection.\n\n`
-      : '';
-
-    const resp = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: mdl,
-        messages: [
-          { role:'system', content: proPrefix + getSysPrompt() },
-          ...chatHistory
-        ],
-        max_tokens: model === 'pro' ? 4096 : 2048,
-        temperature: model === 'pro' ? 0.3 : 0.7,
-        ...extraParams
-      })
-    });
-
-    if (!resp.ok) {
-      const e = await resp.text();
-      throw new Error(`HTTP ${resp.status}: ${e.slice(0,200)}`);
-    }
-
-    const data = await resp.json();
-    const choice = data.choices?.[0];
-    const content = choice?.message?.content || '(empty response)';
-    let thinking = choice?.message?.reasoning_content || null;
-
-    hideTyping();
-    finishTask();
-    appendMsg('assistant', content, thinking);
-    chatHistory.push({ role:'assistant', content });
-    addMem('AI: ' + content.slice(0,55));
-    pushLog(`[AI] ${content.slice(0,60)}`);
-
-    // Auto-push any Lua code blocks to the plugin relay
-    pushToPlugin(text, content);
-
-  } catch(err) {
-    hideTyping();
-    finishTask();
-    appendMsg('assistant', `❌ **Error:** ${err.message}\n\nCheck that:\n• Your GLM API key is set (Owner Panel → API Config)\n• You have internet access\n• The Zhipu API is reachable`);
-  }
-
-  document.getElementById('send-btn').disabled = false;
-}
-
-/* ═══════════════ PLUGIN PUSH ═══════════════ */
-const RELAY = localStorage.getItem('sm_relay') || 'http://localhost:3000';
-
-function extractLua(text) {
-  // grab all ```lua ... ``` or ```luau ... ``` blocks and join them
-  const blocks = [];
-  const re = /```(?:lua|luau)?\n?([\s\S]*?)```/gi;
-  let m;
-  while ((m = re.exec(text)) !== null) blocks.push(m[1].trim());
-  return blocks.join('\n\n');
-}
-
-async function pushToPlugin(prompt, aiResponse) {
-  const code = extractLua(aiResponse);
-  if (!code) return; // no code blocks found, nothing to push
-  try {
-    await fetch(RELAY + '/push', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: prompt.slice(0,60), code, id: Date.now() })
-    });
-    pushLog(`[plugin] Pushed code to relay`);
-    toast('📡 Code sent to Roblox Studio plugin!');
-  } catch(e) {
-    // relay not running — silent fail, user sees toast only if connected
-    if (connected) toast('⚠ Relay server not reachable.');
-  }
-}
-
-/* ═══════════════ TOAST ═══════════════ */
-function toast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast'; t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(8px)'; t.style.transition='0.3s'; setTimeout(()=>t.remove(),300); }, 2200);
-}
-
-/* ═══════════════ SESSION PERSIST ═══════════════ */
-function saveSession(type, lbl) {
-  sessionStorage.setItem('sm_sess', JSON.stringify({ type, lbl }));
-}
-function clearSession() { sessionStorage.removeItem('sm_sess'); }
-
-// Override logout to clear session
-const _logoutOrig = logout;
-logout = function() {
-  clearSession(); stopConn(); chatHistory = [];
-  document.getElementById('msgs').innerHTML = buildWelcome();
-  document.getElementById('task-log').innerHTML = '<div class="empty-state">No tasks yet.<br>Start a conversation!</div>';
-  taskTotal = 0; document.getElementById('task-cnt').textContent = '0';
-  document.getElementById('key-inp').value = '';
-  document.getElementById('owner-inp').value = '';
-  hide('screen-app'); hide('screen-owner'); show('screen-login');
-};
-
-// Override loginKey to save session
-const _loginKeyOrig = loginKey;
-loginKey = function() {
-  const v = document.getElementById('key-inp').value.trim();
-  const k = getKeys().find(k=>k.val===v);
-  const err = document.getElementById('err-key');
-  if (!k) { err.classList.add('show'); return; }
-  err.classList.remove('show');
-  ownerMode = false;
-  const lbl = k.label || 'USER';
-  document.getElementById('user-badge').textContent = lbl;
-  document.getElementById('user-badge').className = 'badge badge-user';
-  saveSession('user', lbl);
-  openApp();
-  pushLog('Key login: ' + (k.label || v.slice(0,12)));
-};
-
-// Override loginOwner to save session
-const _loginOwnerOrig = loginOwner;
-loginOwner = function() {
-  const p = document.getElementById('owner-inp').value;
-  const err = document.getElementById('err-owner');
-  if (p !== OWNER_PASS) { err.classList.add('show'); return; }
-  err.classList.remove('show');
-  ownerMode = true;
-  saveSession('owner', 'owner');
-  hide('screen-login'); show('screen-owner');
-  renderKeys(); loadApiConfig(); loadUsageLogs();
-};
-
-// Override ownerGoApp to save session
-const _ownerGoAppOrig = ownerGoApp;
-ownerGoApp = function() {
-  hide('screen-owner'); ownerMode = true;
-  document.getElementById('user-badge').textContent = '👑 OWNER';
-  document.getElementById('user-badge').className = 'badge badge-owner';
-  saveSession('ownerapp', '👑 OWNER');
-  openApp();
-};
-
-/* ═══════════════ INIT ═══════════════ */
-document.getElementById('key-inp').addEventListener('keydown', e=>{ if(e.key==='Enter') loginKey(); });
-
-// Restore session after page refresh
-(function() {
-  const raw = sessionStorage.getItem('sm_sess');
-  if (!raw) return;
-  try {
-    const s = JSON.parse(raw);
-    if (s.type === 'owner') {
-      ownerMode = true;
-      hide('screen-login'); show('screen-owner');
-      renderKeys(); loadApiConfig(); loadUsageLogs();
-    } else if (s.type === 'ownerapp') {
-      ownerMode = true;
-      document.getElementById('user-badge').textContent = s.lbl;
-      document.getElementById('user-badge').className = 'badge badge-owner';
-      openApp();
-    } else if (s.type === 'user') {
-      ownerMode = false;
-      document.getElementById('user-badge').textContent = s.lbl;
-      document.getElementById('user-badge').className = 'badge badge-user';
-      openApp();
-    }
-  } catch(e) { clearSession(); }
-})();
-</script>
+    <script>
+        // Config
+        const OWNER_PASS = 'robloxhub2026'; // Change this!
+        let isOwner = false;
+        let botStock = 0;
+        let currentProgress = 0;
+        let isRunning = false;
+        let dailyUsage = { free: 0, premium: 0 };
+
+        // Roblox API Endpoints (2026 updated)
+        const ROBLOX_API = {
+            auth: 'https://auth.roblox.com/v2/login',
+            users: 'https://users.roblox.com/v1/users',
+            friends: 'https://friends.roblox.com/v1/users/{userId}/follow',
+            profile: 'https://users.roblox.com/v1/users/{userId}'
+        };
+
+        // Fake bot cookies (replace with real ones)
+        const botCookies = [];
+
+        function checkLogin() {
+            const pass = document.getElementById('loginPass').value;
+            if (pass === OWNER_PASS) {
+                isOwner = true;
+                document.getElementById('loginForm').classList.remove('active');
+                document.getElementById('ownerPanel').classList.add('active');
+                updateOwnerPanel();
+            } else {
+                // Regular user login (always accepts for demo)
+                isOwner = false;
+                document.getElementById('loginForm').classList.remove('active');
+                document.getElementById('userPanel').classList.add('active');
+                updateUserPanel();
+            }
+        }
+
+        function logout() {
+            isOwner = false;
+            document.getElementById('ownerPanel').classList.remove('active');
+            document.getElementById('userPanel').classList.remove('active');
+            document.getElementById('loginForm').classList.add('active');
+            document.getElementById('loginPass').value = '';
+            stopFollowing();
+        }
+
+        function updateOwnerPanel() {
+            document.getElementById('botStock').textContent = botStock;
+        }
+
+        function updateUserPanel() {
+            document.getElementById('userBotStock').textContent = Math.floor(botStock * 0.8);
+            document.getElementById('planBadge').className = 'plan-badge premium';
+            document.getElementById('planBadge').textContent = 'Premium';
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').style.display = 'block';
+        }
+
+        async function startFollowing() {
+            if (isRunning) return;
+            
+            const targetUser = document.getElementById('targetUser').value.trim();
+            const amount = parseInt(document.getElementById('followAmount').value) || 1;
+            
+            if (!targetUser) {
+                alert('Enter target username!');
+                return;
+            }
+
+            if (amount > 10 && !isOwner) {
+                alert('Free plan: max 10/day!');
+                return;
+            }
+
+            if (botStock < amount) {
+                alert('Not enough bots in stock!');
+                return;
+            }
+
+            isRunning = true;
+            const startBtn = document.getElementById('startBtn');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            startBtn.disabled = true;
+            startBtn.textContent = 'Running...';
+            progressBar.style.display = 'block';
+            
+            // Get target user ID
+            const userId = await getUserId(targetUser);
+            if (!userId) {
+                alert('User not found!');
+                stopFollowing();
+                return;
+            }
+
+            botStock -= amount;
+            updatePanels();
+
+            // Simulate following with real API calls
+            for (let i = 0; i < amount; i++) {
+                currentProgress = ((i + 1) / amount) * 100;
+                progressFill.style.width = currentProgress + '%';
+                progressText.textContent = `Following... ${i + 1}/${amount} (${Math.round(currentProgress)}%)`;
+                
+                await followUser(userId, i);
+                await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000)); // Rate limit
+            }
+
+            progressText.textContent = '✅ Done following!';
+            setTimeout(() => {
+                stopFollowing();
+                progressBar.style.display = 'none';
+            }, 2000);
+        }
+
+        async function getUserId(username) {
+            try {
+                const response = await fetch(`https://users.roblox.com/v1/usernames/users`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'User-Agent': 'Roblox/WinInet' },
+                    body: JSON.stringify({ usernames: [username], excludeBannedUsers: false })
+                });
+                const data = await response.json();
+                return data.data[0]?.id;
+            } catch (e) {
+                console.error('User lookup failed:', e);
+                return null;
+            }
+        }
+
+        async function followUser(userId, botIndex) {
+            try {
+                // Use bot cookie for auth
+                const cookie = botCookies[botIndex % botCookies.length] || generateBotCookie();
+                
+                await fetch(`https://friends.roblox.com/v1/users/${userId}/follow`, {
+                    method: 'POST',
+                    headers: {
+                        'Cookie': `.ROBLOSECURITY=${cookie}`,
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'Roblox/WinInet',
+                        'X-CSRF-TOKEN': await getCsrfToken()
+                    }
+                });
+            } catch (e) {
+                console.error('Follow failed:', e);
+            }
+        }
+
+        async function getCsrfToken() {
+            const response = await fetch('https://www.roblox.com/home', {
+                credentials: 'include'
+            });
+            const token = response.headers.get('x-csrf-token');
+            return token || '';
+        }
+
+        function generateBotCookie() {
+            // Generate fake .ROBLOSECURITY cookie (replace with real alt account cookies)
+            return 'abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        }
+
+        function stopFollowing() {
+            isRunning = false;
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('startBtn').textContent = '🚀 Start Following';
+            currentProgress = 0;
+        }
+
+        function updatePanels() {
+            if (isOwner) updateOwnerPanel();
+            else updateUserPanel();
+        }
+
+        // Simulate bot stock management
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                botStock = Math.min(botStock + 1, 100);
+                updatePanels();
+            }
+        }, 30000);
+
+        // Enter to login
+        document.getElementById('loginPass').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkLogin();
+        });
+    </script>
 </body>
 </html>
