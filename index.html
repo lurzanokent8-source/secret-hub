@@ -3,290 +3,452 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roblox Follower Hub</title>
+    <title>🔥 Roblox Secret Hub 🔥</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .container { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 40px; width: 90%; max-width: 500px; }
-        .login-form, .owner-panel, .user-panel { display: none; }
-        .login-form.active, .owner-panel.active, .user-panel.active { display: block; }
-        h1 { color: #333; text-align: center; margin-bottom: 30px; font-size: 2.2em; }
-        input, button { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 10px; font-size: 16px; }
-        input { background: #f0f0f0; transition: all 0.3s; }
-        input:focus { outline: none; background: #e8f0fe; box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.3); }
-        button { background: linear-gradient(45deg, #ff6b6b, #feca57); color: white; font-weight: bold; cursor: pointer; transition: all 0.3s; }
-        button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-        button:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-        .owner-login { background: linear-gradient(45deg, #ff4757, #ff3838) !important; }
-        .stock-display { background: #4ecdc4; color: white; font-weight: bold; font-size: 1.2em; padding: 20px; border-radius: 15px; text-align: center; margin: 20px 0; }
-        .progress-bar { width: 100%; height: 20px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin: 20px 0; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #4ecdc4, #44a08d); width: 0%; transition: width 0.3s; }
-        .plan-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; color: white; font-weight: bold; margin: 5px; }
-        .free { background: #ffa726; }
-        .premium { background: #4caf50; }
-        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
-        .stat-card { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 15px; text-align: center; }
-        .tabs { display: flex; margin: 20px 0; }
-        .tab-btn { flex: 1; padding: 15px; background: #f0f0f0; border: none; cursor: pointer; border-radius: 10px 10px 0 0; font-weight: bold; }
-        .tab-btn.active { background: white; }
-        .tab-content { background: white; padding: 30px; border-radius: 0 10px 10px 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .logout { background: #ff4757 !important; margin-top: 20px; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
+            min-height: 100vh; 
+            padding: 20px;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: rgba(255,255,255,0.95); 
+            border-radius: 20px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+            overflow: hidden;
+        }
+        .header { 
+            background: linear-gradient(45deg, #ff6b6b, #feca57); 
+            color: white; 
+            padding: 30px; 
+            text-align: center; 
+        }
+        .content { padding: 30px; }
+        
+        /* Login */
+        .login-form.active { display: block; }
+        .login-form { display: none; }
+        input[type="password"] { 
+            width: 100%; padding: 15px; margin: 10px 0; 
+            border: 2px solid #ddd; border-radius: 10px; 
+            font-size: 16px; background: #f8f9fa;
+        }
+        .login-btn { 
+            width: 100%; padding: 15px; background: #4ecdc4; 
+            color: white; border: none; border-radius: 10px; 
+            font-size: 18px; font-weight: bold; cursor: pointer;
+        }
+        
+        /* Owner Panel */
+        .owner-panel { display: none; }
+        .owner-panel.active { display: block; }
+        .key-gen { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; 
+            margin: 30px 0;
+        }
+        .key-card { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: white; padding: 25px; border-radius: 15px; 
+            text-align: center;
+        }
+        .generate-btn { 
+            width: 100%; padding: 12px; background: #4ecdc4; 
+            color: white; border: none; border-radius: 8px; 
+            font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
+        .bot-input { 
+            width: 100%; padding: 12px; margin: 10px 0; 
+            border: 2px solid #ddd; border-radius: 8px; 
+            font-family: monospace;
+        }
+        .stock-display { 
+            background: #4ecdc4; color: white; padding: 20px; 
+            border-radius: 15px; text-align: center; font-size: 24px; 
+            font-weight: bold; margin: 20px 0;
+        }
+        
+        /* User Panel */
+        .user-panel { display: none; }
+        .user-panel.active { display: block; }
+        .user-key-display { 
+            background: #ffeaa7; padding: 15px; border-radius: 10px; 
+            margin-bottom: 20px; text-align: center; font-weight: bold;
+        }
+        .plan-badge.free { background: #fdcb6e; color: #2d3436; }
+        .plan-badge.premium { background: #00b894; color: white; }
+        .follow-form input { 
+            width: 100%; padding: 15px; margin: 10px 0; 
+            border: 2px solid #ddd; border-radius: 10px;
+        }
+        .amount-input { display: grid; grid-template-columns: 3fr 1fr; gap: 10px; }
+        .mode-select { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 10px; }
+        .start-btn { 
+            width: 100%; padding: 20px; background: linear-gradient(45deg, #00b894, #00cec9); 
+            color: white; border: none; border-radius: 15px; font-size: 20px; 
+            font-weight: bold; cursor: pointer; margin: 20px 0;
+        }
+        .start-btn:disabled { background: #b2bec3; cursor: not-allowed; }
+        .progress-container { 
+            background: #f1f2f6; padding: 20px; border-radius: 15px; 
+            margin: 20px 0; display: none;
+        }
+        .progress-bar { 
+            width: 100%; height: 25px; background: #ddd; 
+            border-radius: 15px; overflow: hidden; margin: 15px 0;
+        }
+        .progress-fill { 
+            height: 100%; background: linear-gradient(90deg, #00b894, #00cec9); 
+            width: 0%; transition: width 0.5s; border-radius: 15px;
+        }
+        .status-text { font-size: 18px; font-weight: bold; text-align: center; }
+        .coming-soon { 
+            background: #636e72; color: white; padding: 15px; 
+            border-radius: 10px; text-align: center; margin: 20px 0;
+            opacity: 0.7;
+        }
+        .logout-btn { 
+            width: 100%; padding: 15px; background: #e17055; 
+            color: white; border: none; border-radius: 10px; 
+            font-weight: bold; cursor: pointer; margin-top: 20px;
+        }
+        .error { background: #e74c3c; color: white; padding: 15px; border-radius: 10px; margin: 10px 0; }
+        .success { background: #00b894; color: white; padding: 15px; border-radius: 10px; margin: 10px 0; }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Login Screen -->
-        <div class="login-form active" id="loginForm">
-            <h1>🔐 Secret Hub</h1>
-            <input type="password" id="loginPass" placeholder="Enter Password" maxlength="20">
-            <button onclick="checkLogin()">Login</button>
-            <p style="text-align: center; margin-top: 20px; font-size: 14px; color: #666;">
-                Use owner password for full access
-            </p>
+        <div class="header">
+            <h1>🔥 Roblox Secret Hub 🔥</h1>
+            <p>Ultimate Automation Tool</p>
         </div>
+        
+        <div class="content">
+            <!-- LOGIN -->
+            <div class="login-form active" id="loginForm">
+                <h2>Enter Owner Password</h2>
+                <input type="password" id="ownerPass" placeholder="Owner Password" maxlength="50">
+                <button class="login-btn" onclick="login()">Login 🔑</button>
+            </div>
 
-        <!-- Owner Panel -->
-        <div class="owner-panel" id="ownerPanel">
-            <h1>👑 Owner Panel</h1>
-            <div class="stock-display">Bot Stock: <span id="botStock">0</span></div>
-            <div class="stats">
-                <div class="stat-card">
-                    <div>Free Users</div>
-                    <div style="font-size: 1.5em;">0</div>
+            <!-- OWNER PANEL -->
+            <div class="owner-panel" id="ownerPanel">
+                <h2>👑 Owner Control Panel</h2>
+                <div class="stock-display">
+                    Bot Stock: <span id="botStock">0</span>
                 </div>
-                <div class="stat-card">
-                    <div>Premium Users</div>
-                    <div style="font-size: 1.5em;">0</div>
+                
+                <div class="key-gen">
+                    <div class="key-card">
+                        <h3>Free Plan Key</h3>
+                        <p>10 follows/day</p>
+                        <div id="freeKey"></div>
+                        <button class="generate-btn" onclick="generateKey('free')">Generate New</button>
+                    </div>
+                    <div class="key-card">
+                        <h3>Premium Plan Key</h3>
+                        <p>Unlimited follows</p>
+                        <div id="premiumKey"></div>
+                        <button class="generate-btn" onclick="generateKey('premium')">Generate New</button>
+                    </div>
                 </div>
-            </div>
-            <button class="logout" onclick="logout()">Logout</button>
-        </div>
 
-        <!-- User Panel -->
-        <div class="user-panel" id="userPanel">
-            <h1>🤖 Follower Bot</h1>
-            <div class="stock-display">Available Bots: <span id="userBotStock">0</span></div>
-            
-            <div class="plan-badge premium" id="planBadge">Premium</div>
-            
-            <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('follow')">Follow Bot</button>
-                <button class="tab-btn" onclick="switchTab('stock')">Stock</button>
+                <h3>Add Bot Account</h3>
+                <input type="text" class="bot-input" id="botCookie" placeholder=".ROBLOSECURITY=abc123...">
+                <button class="login-btn" onclick="addBot()">➕ Add Bot Cookie</button>
+                
+                <button class="logout-btn" onclick="logout()">🚪 Logout</button>
             </div>
-            
-            <div class="tab-content" id="followTab">
-                <input type="text" id="targetUser" placeholder="Target Roblox username">
-                <input type="number" id="followAmount" placeholder="Amount to follow (max 10/day free)" min="1" max="999">
-                <button id="startBtn" onclick="startFollowing()">🚀 Start Following</button>
-                <div class="progress-bar" id="progressBar" style="display: none;">
-                    <div class="progress-fill" id="progressFill"></div>
+
+            <!-- USER PANEL -->
+            <div class="user-panel" id="userPanel">
+                <div class="user-key-display" id="userKeyDisplay"></div>
+                
+                <div class="stock-display">
+                    Available Bots: <span id="userBotStock">0</span>
                 </div>
-                <div id="progressText" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
+                
+                <span class="plan-badge free" id="planBadge">FREE PLAN</span>
+                
+                <h3>Follow Bot</h3>
+                <div class="follow-form">
+                    <input type="text" id="targetUser" placeholder="👤 Target Roblox username">
+                    <div class="amount-input">
+                        <input type="number" id="followAmount" placeholder="Amount" min="1" max="999">
+                        <select class="mode-select" id="modeSelect">
+                            <option value="follow">Follow Only</option>
+                            <option value="group" disabled>Join Group (Soon)</option>
+                            <option value="visit" disabled>Visit Game (Soon)</option>
+                        </select>
+                    </div>
+                    <div id="errorMsg" class="error" style="display:none;"></div>
+                    <button class="start-btn" id="startBtn" onclick="startBot()">🚀 START BOT</button>
+                </div>
+
+                <div class="progress-container" id="progressContainer">
+                    <div class="status-text" id="statusText">Ready...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div id="detailText"></div>
+                </div>
+
+                <div class="coming-soon">
+                    🚧 Group Join & Game Visit coming soon! 🚧
+                </div>
+                
+                <button class="logout-btn" onclick="logout()">🚪 Logout</button>
             </div>
-            
-            <div class="tab-content" id="stockTab" style="display: none;">
-                <p><strong>Your Plan:</strong> Premium - Unlimited follows</p>
-                <p><strong>Daily Limit:</strong> ∞ (Premium)</p>
-                <p><strong>Bot Usage Today:</strong> 0/∞</p>
-            </div>
-            
-            <button class="logout" onclick="logout()">Logout</button>
         </div>
     </div>
 
     <script>
-        // Config
-        const OWNER_PASS = 'robloxhub2026'; // Change this!
-        let isOwner = false;
+        // CONFIG
+        const OWNER_PASSWORD = 'secretowner2026'; // CHANGE THIS!
         let botStock = 0;
-        let currentProgress = 0;
+        let botAccounts = []; // Store .ROBLOSECURITY cookies
+        let activeKeys = { free: {}, premium: {} };
+        let currentUserPlan = null;
+        let currentUserKey = null;
         let isRunning = false;
-        let dailyUsage = { free: 0, premium: 0 };
 
-        // Roblox API Endpoints (2026 updated)
-        const ROBLOX_API = {
-            auth: 'https://auth.roblox.com/v2/login',
-            users: 'https://users.roblox.com/v1/users',
-            friends: 'https://friends.roblox.com/v1/users/{userId}/follow',
-            profile: 'https://users.roblox.com/v1/users/{userId}'
-        };
+        // Init
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('ownerPass').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') login();
+            });
+        });
 
-        // Fake bot cookies (replace with real ones)
-        const botCookies = [];
+        function showPanel(panel) {
+            document.querySelectorAll('[id$="Panel"], .login-form').forEach(p => p.classList.remove('active'));
+            document.getElementById(panel).classList.add('active');
+        }
 
-        function checkLogin() {
-            const pass = document.getElementById('loginPass').value;
-            if (pass === OWNER_PASS) {
-                isOwner = true;
-                document.getElementById('loginForm').classList.remove('active');
-                document.getElementById('ownerPanel').classList.add('active');
-                updateOwnerPanel();
+        function login() {
+            const pass = document.getElementById('ownerPass').value;
+            if (pass === OWNER_PASSWORD) {
+                showPanel('ownerPanel');
+                updateOwnerDisplay();
             } else {
-                // Regular user login (always accepts for demo)
-                isOwner = false;
-                document.getElementById('loginForm').classList.remove('active');
-                document.getElementById('userPanel').classList.add('active');
-                updateUserPanel();
+                showError('Wrong password!');
             }
         }
 
-        function logout() {
-            isOwner = false;
-            document.getElementById('ownerPanel').classList.remove('active');
-            document.getElementById('userPanel').classList.remove('active');
-            document.getElementById('loginForm').classList.add('active');
-            document.getElementById('loginPass').value = '';
-            stopFollowing();
+        function generateKey(type) {
+            const key = 'RBX-' + type.toUpperCase() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            activeKeys[type][key] = { plan: type, created: Date.now(), usage: 0 };
+            
+            const keyEl = document.getElementById(type + 'Key');
+            keyEl.innerHTML = `<div style="font-family:monospace;font-size:18px;padding:10px;background:#2d3436;color:#00b894;border-radius:8px;margin:10px 0;">${key}</div>
+                              <small>Share this with users</small>`;
+            
+            showSuccess(`${type.toUpperCase()} key generated!`);
         }
 
-        function updateOwnerPanel() {
+        function addBot() {
+            const cookie = document.getElementById('botCookie').value.trim();
+            if (!cookie.includes('.ROBLOSECURITY=')) {
+                showError('Invalid cookie format!');
+                return;
+            }
+            
+            botAccounts.push(cookie);
+            botStock = botAccounts.length;
+            updateOwnerDisplay();
+            document.getElementById('botCookie').value = '';
+            showSuccess('Bot added! Stock: ' + botStock);
+        }
+
+        function updateOwnerDisplay() {
             document.getElementById('botStock').textContent = botStock;
         }
 
-        function updateUserPanel() {
-            document.getElementById('userBotStock').textContent = Math.floor(botStock * 0.8);
-            document.getElementById('planBadge').className = 'plan-badge premium';
-            document.getElementById('planBadge').textContent = 'Premium';
+        function logout() {
+            // Reset user session
+            currentUserPlan = null;
+            currentUserKey = null;
+            showPanel('loginForm');
+            document.getElementById('ownerPass').value = '';
+            stopBot();
         }
 
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
-            
-            event.target.classList.add('active');
-            document.getElementById(tab + 'Tab').style.display = 'block';
+        // USER FUNCTIONS
+        function checkUserKey(key) {
+            for (let type in activeKeys) {
+                if (activeKeys[type][key]) {
+                    return activeKeys[type][key];
+                }
+            }
+            return null;
         }
 
-        async function startFollowing() {
-            if (isRunning) return;
-            
-            const targetUser = document.getElementById('targetUser').value.trim();
-            const amount = parseInt(document.getElementById('followAmount').value) || 1;
-            
-            if (!targetUser) {
-                alert('Enter target username!');
+        function startBot() {
+            const key = prompt('Enter your key:');
+            if (!key) return;
+
+            const userData = checkUserKey(key);
+            if (!userData) {
+                showError('Invalid or expired key!');
                 return;
             }
 
-            if (amount > 10 && !isOwner) {
-                alert('Free plan: max 10/day!');
+            currentUserKey = key;
+            currentUserPlan = userData.plan;
+            setupUserPanel(userData);
+        }
+
+        function setupUserPanel(userData) {
+            document.getElementById('userKeyDisplay').innerHTML = `
+                Key: <strong>${currentUserKey}</strong> | Plan: <span class="plan-badge ${userData.plan}">${userData.plan.toUpperCase()}</span>
+            `;
+            
+            const planBadge = document.getElementById('planBadge');
+            planBadge.textContent = userData.plan.toUpperCase() + ' PLAN';
+            planBadge.className = `plan-badge ${userData.plan}`;
+            
+            document.getElementById('userBotStock').textContent = Math.min(botStock, userData.plan === 'premium' ? 999 : 10);
+        }
+
+        async function startFollowing() {
+            const username = document.getElementById('targetUser').value.trim();
+            const amount = parseInt(document.getElementById('followAmount').value) || 1;
+            
+            // Validate Roblox username
+            if (!/^[a-zA-Z0-9_-]{3,20}$/.test(username)) {
+                showError('Invalid username format!');
+                return;
+            }
+
+            // Check real user exists
+            const userId = await validateRobloxUser(username);
+            if (!userId) {
+                showError('User not found on Roblox!');
+                return;
+            }
+
+            // Plan limits
+            const maxDaily = currentUserPlan === 'premium' ? 999 : 10;
+            if (amount > maxDaily) {
+                showError(`Max ${maxDaily} for ${currentUserPlan} plan!`);
                 return;
             }
 
             if (botStock < amount) {
-                alert('Not enough bots in stock!');
+                showError('Not enough bots!');
                 return;
             }
 
-            isRunning = true;
-            const startBtn = document.getElementById('startBtn');
-            const progressBar = document.getElementById('progressBar');
-            const progressFill = document.getElementById('progressFill');
-            const progressText = document.getElementById('progressText');
-            
-            startBtn.disabled = true;
-            startBtn.textContent = 'Running...';
-            progressBar.style.display = 'block';
-            
-            // Get target user ID
-            const userId = await getUserId(targetUser);
-            if (!userId) {
-                alert('User not found!');
-                stopFollowing();
-                return;
-            }
-
-            botStock -= amount;
-            updatePanels();
-
-            // Simulate following with real API calls
-            for (let i = 0; i < amount; i++) {
-                currentProgress = ((i + 1) / amount) * 100;
-                progressFill.style.width = currentProgress + '%';
-                progressText.textContent = `Following... ${i + 1}/${amount} (${Math.round(currentProgress)}%)`;
-                
-                await followUser(userId, i);
-                await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000)); // Rate limit
-            }
-
-            progressText.textContent = '✅ Done following!';
-            setTimeout(() => {
-                stopFollowing();
-                progressBar.style.display = 'none';
-            }, 2000);
+            runBot(username, userId, amount);
         }
 
-        async function getUserId(username) {
+        async function validateRobloxUser(username) {
             try {
-                const response = await fetch(`https://users.roblox.com/v1/usernames/users`, {
+                const response = await fetch('https://users.roblox.com/v1/usernames/users', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'User-Agent': 'Roblox/WinInet' },
-                    body: JSON.stringify({ usernames: [username], excludeBannedUsers: false })
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    },
+                    body: JSON.stringify({ 
+                        usernames: [username], 
+                        excludeBannedUsers: false 
+                    })
                 });
                 const data = await response.json();
-                return data.data[0]?.id;
+                return data.data[0]?.id || null;
             } catch (e) {
-                console.error('User lookup failed:', e);
                 return null;
             }
         }
 
-        async function followUser(userId, botIndex) {
-            try {
-                // Use bot cookie for auth
-                const cookie = botCookies[botIndex % botCookies.length] || generateBotCookie();
+        async function runBot(username, userId, amount) {
+            isRunning = true;
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const statusText = document.getElementById('statusText');
+            const detailText = document.getElementById('detailText');
+            const startBtn = document.getElementById('startBtn');
+            
+            progressContainer.style.display = 'block';
+            startBtn.disabled = true;
+            startBtn.textContent = '⏳ Running...';
+            hideError();
+
+            botStock -= amount;
+
+            for (let i = 0; i < amount; i++) {
+                const progress = ((i + 1) / amount) * 100;
+                progressFill.style.width = progress + '%';
+                statusText.textContent = `Following @${username}...`;
+                detailText.innerHTML = `${i + 1}/${amount} (${Math.round(progress)}%) | Bots left: ${botStock}`;
                 
+                await followWithBot(userId);
+                await new Promise(r => setTimeout(r, 800 + Math.random() * 400));
+            }
+
+            statusText.textContent = '✅ COMPLETED!';
+            detailText.textContent = `Successfully followed ${amount} bots!`;
+            
+            updateDisplays();
+            setTimeout(() => {
+                progressContainer.style.display = 'none';
+                startBtn.disabled = false;
+                startBtn.textContent = '🚀 START BOT';
+                startBtn.onclick = startFollowing;
+            }, 3000);
+        }
+
+        async function followWithBot(userId) {
+            if (botAccounts.length === 0) return;
+            
+            const cookie = botAccounts[0]; // Use first bot
+            try {
+                const tokenRes = await fetch('https://www.roblox.com/home', {
+                    headers: { 'Cookie': cookie }
+                });
+                const csrfToken = tokenRes.headers.get('x-csrf-token') || '';
+
                 await fetch(`https://friends.roblox.com/v1/users/${userId}/follow`, {
                     method: 'POST',
                     headers: {
-                        'Cookie': `.ROBLOSECURITY=${cookie}`,
+                        'Cookie': cookie,
+                        'X-CSRF-TOKEN': csrfToken,
                         'Content-Type': 'application/json',
-                        'User-Agent': 'Roblox/WinInet',
-                        'X-CSRF-TOKEN': await getCsrfToken()
+                        'User-Agent': 'Roblox/WinInet'
                     }
                 });
             } catch (e) {
-                console.error('Follow failed:', e);
+                console.log('Bot follow failed:', e);
             }
         }
 
-        async function getCsrfToken() {
-            const response = await fetch('https://www.roblox.com/home', {
-                credentials: 'include'
-            });
-            const token = response.headers.get('x-csrf-token');
-            return token || '';
+        function updateDisplays() {
+            document.getElementById('botStock').textContent = botStock;
+            document.getElementById('userBotStock').textContent = Math.min(botStock, currentUserPlan === 'premium' ? 999 : 10);
         }
 
-        function generateBotCookie() {
-            // Generate fake .ROBLOSECURITY cookie (replace with real alt account cookies)
-            return 'abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        function showError(msg) {
+            const errorEl = document.getElementById('errorMsg');
+            errorEl.textContent = msg;
+            errorEl.style.display = 'block';
         }
 
-        function stopFollowing() {
-            isRunning = false;
-            document.getElementById('startBtn').disabled = false;
-            document.getElementById('startBtn').textContent = '🚀 Start Following';
-            currentProgress = 0;
+        function hideError() {
+            document.getElementById('errorMsg').style.display = 'none';
         }
 
-        function updatePanels() {
-            if (isOwner) updateOwnerPanel();
-            else updateUserPanel();
+        function showSuccess(msg) {
+            const successEl = document.createElement('div');
+            successEl.className = 'success';
+            successEl.textContent = msg;
+            document.querySelector('.content').insertBefore(successEl, document.querySelector('.stock-display'));
+            setTimeout(() => successEl.remove(), 3000);
         }
 
-        // Simulate bot stock management
-        setInterval(() => {
-            if (Math.random() > 0.7) {
-                botStock = Math.min(botStock + 1, 100);
-                updatePanels();
-            }
-        }, 30000);
-
-        // Enter to login
-        document.getElementById('loginPass').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') checkLogin();
-        });
+        // START BUTTON LISTENER
+        document.getElementById('startBtn').onclick = startBot;
     </script>
 </body>
 </html>
